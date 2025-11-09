@@ -2,7 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from "../page.module.css";
+import styles from "./styles.module.css";
+import {TextField, Button} from '@mui/material';
+
+const textFieldSx = {
+  '& .MuiInput-underline:before': { borderBottomColor: '#1976d2' },
+  '& .MuiInput-underline:after': { borderBottomColor: '#1976d2' },
+  '& .MuiInputLabel-root': { color: '#1976d2' },
+  '& .MuiInputLabel-root.Mui-focused': { color: '#1976d2' },
+  '& .MuiInputBase-input': { color: 'white' },
+};
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -32,70 +41,43 @@ export default function Login() {
   return (
     <div className={styles.page}>
       <h1>Login Page</h1>
-      <form onSubmit={handleLogin} style={{ marginTop: '2rem', maxWidth: '400px' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Email:
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              fontSize: '1rem',
-              borderRadius: '4px',
-              border: '1px solid #ccc'
-            }}
+        <div className={styles.inputContainer}>
+          <TextField
+          required
+          id="email-input"
+          label="Email"
+          type="email"
+          defaultValue="Email"
+          variant="standard"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          sx={textFieldSx}
           />
-        </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Password:
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              fontSize: '1rem',
-              borderRadius: '4px',
-              border: '1px solid #ccc'
-            }}
+          <TextField
+          required
+          id="password-input"
+          label="Password"
+          type="password"
+          variant="standard"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          sx={textFieldSx}
           />
+          {error && (
+            <div style={{ color: 'red', marginBottom: '1rem' }}>
+              {error}
+            </div>
+          )}
+          
+          <Button
+            variant='contained'
+            disabled={loading}
+            onClick={handleLogin}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </Button>
         </div>
         
-        {error && (
-          <div style={{ color: 'red', marginBottom: '1rem' }}>
-            {error}
-          </div>
-        )}
-        
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            fontSize: '1rem',
-            backgroundColor: loading ? '#ccc' : '#0070f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
     </div>
   );
 }
