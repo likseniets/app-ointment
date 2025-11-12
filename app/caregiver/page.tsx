@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from "../page.module.css";
 import { Button, TextField, Card, CardContent, Typography, Box, Chip, ThemeProvider, createTheme } from '@mui/material';
 import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
+import { getUser } from '../../api/api';
+
 
 const darkTheme = createTheme({
   palette: {
@@ -50,6 +52,8 @@ export default function CaregiverPage() {
   const [startTime, setStartTime] = useState<Dayjs | null>(null);
   const [endTime, setEndTime] = useState<Dayjs | null>(null);
 
+  const [user, setUser] = useState<any>(null);
+
   const handleAddAvailability = () => {
     if (selectedDate && startTime && endTime) {
       const availability: Availability = {
@@ -68,6 +72,16 @@ export default function CaregiverPage() {
   const handleDeleteAvailability = (id: string) => {
     setAvailabilities(availabilities.filter(a => a.id !== id));
   };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const user = await getUser(1);
+      setUser(user);
+      console.log(user);
+    }
+    fetchUserData();
+    // Fetch availabilities and appointments from backend here
+  }, []);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -183,9 +197,9 @@ export default function CaregiverPage() {
                 Your Availabilities
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2, overflowY: 'auto', height: '100%' }}>
-                {availabilities.map((availability) => (
+                {user.availability && user.availability.length > 0 && user.availability.map((availability: any) => (
                   <Box
-                    key={availability.id}
+                    key={availability.availabilityId}
                     sx={{
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -198,7 +212,7 @@ export default function CaregiverPage() {
                   >
                   <Box>
                     <Typography variant="body1" fontWeight="bold">
-                      {dayjs(availability.date).format('dddd, MMMM D, YYYY')}
+                      {availability.date}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {availability.startTime} - {availability.endTime}
