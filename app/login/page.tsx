@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from "./styles.module.css";
 import {TextField, Button} from '@mui/material';
+import { login } from '@/api/api';
 
 const textFieldSx = {
   '& .MuiInput-underline:before': { borderBottomColor: '#1976d2' },
@@ -20,21 +21,24 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e: string, p: string) => {
     setError('');
     setLoading(true);
-
-
     // skal byttes ut med riktig autentisering hvor vi får tilbake brukerrolle
-    if (email === 'client@example.com' && password === 'clientpassword') {
-      router.push('/client');
-    } else if (email === 'caregiver@example.com' && password === 'caregiverpassword') {
-      router.push('/caregiver');
-    } else {
-      setError('Invalid email or password');
+   try {
+    const user = await login(e, p);
+    localStorage.setItem('user', JSON.stringify(user));
+    console.log(user);
+    if (user && user.role) {
+      if (user.role === 1) {
+        router.push('/caregiver');
+      } else if (user.role === 2) {
+        router.push('/client');
+      }
     }
-
+    } catch (err) {
+      setError('Login failed. Please check your credentials.');
+    }
     setLoading(false);
   };
 
@@ -72,7 +76,7 @@ export default function Login() {
           <Button
             variant='contained'
             disabled={loading}
-            onClick={handleLogin}
+            onClick={() => handleLogin(email, password)}
           >
             {loading ? 'Logging in...' : 'Login'}
           </Button>
