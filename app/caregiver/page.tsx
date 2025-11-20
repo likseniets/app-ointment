@@ -31,7 +31,7 @@ import {
   Caregiver,
   CreateAvailabilityDTO,
   UpdateAvailabilityResponse,
-} from "../interfaces/interfaces";
+} from "../../interfaces/interfaces";
 import { create } from "domain";
 
 const darkTheme = createTheme({

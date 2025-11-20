@@ -1,7 +1,7 @@
 import {
   CreateAvailabilityDTO,
   UpdateAvailabilityResponse,
-} from "@/app/interfaces/interfaces";
+} from "@/interfaces/interfaces";
 
 const BaseUrl = "http://localhost:5282";
 
@@ -11,6 +11,13 @@ export const getUser = async (userId: number) => {
   });
   return response.json();
 };
+
+export const getCaregivers = async () => {
+  const response = await fetch(`${BaseUrl}/api/User/caregivers`, {
+    method: "GET",
+  });
+  return response.json();
+}
 
 export const login = async (email: string, password: string) => {
   const response = await fetch(`${BaseUrl}/api/User/login`, {

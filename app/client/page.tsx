@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  getAllAvailabilities,
-  createAppointment,
   getClientAppointments,
 } from "@/api/api";
-import { Availability, Client, Appointment } from "../interfaces/interfaces";
+import { Client, Appointment } from "../../interfaces/interfaces";
 import styles from "../page.module.css";
 import {
   Button,
@@ -16,13 +15,7 @@ import {
   Box,
   ThemeProvider,
   createTheme,
-  TextField,
   CircularProgress,
-  Alert,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
 } from "@mui/material";
 import dayjs from "dayjs";
 
@@ -40,85 +33,29 @@ const darkTheme = createTheme({
 });
 
 export default function ClientPage() {
-  const [availabilities, setAvailabilities] = useState<Availability[]>([]);
+  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAvailability, setSelectedAvailability] =
-    useState<Availability | null>(null);
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
 
   const client: Client = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user") as string)
     : null;
 
   useEffect(() => {
-    fetchData();
+    fetchAppointments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchData = async () => {
+  const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const [availabilitiesData, appointmentsData] = await Promise.all([
-        getAllAvailabilities(),
-        getClientAppointments(client?.userId || 1),
-      ]);
-      setAvailabilities(availabilitiesData);
+      const appointmentsData = await getClientAppointments(client?.userId || 1);
       setAppointments(appointmentsData);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setMessage("Failed to load data");
+      console.error("Error fetching appointments:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleBookAppointment = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedAvailability) {
-      setMessage("Please select a time slot");
-      return;
-    }
-    if (selectedAvailability.availabilityId === undefined) {
-      setMessage("Selected availability is invalid.");
-      return;
-    }
-    try {
-      setSubmitting(true);
-      setMessage("");
-
-      const appointmentData = {
-        availabilityId: selectedAvailability.availabilityId,
-        clientId: client?.userId || 1,
-        location: location,
-        description: description,
-      };
-
-      const updatedAppointments = await createAppointment(appointmentData);
-      setMessage("Appointment booked successfully!");
-      setAppointments(updatedAppointments);
-      // Reset form
-      setSelectedAvailability(null);
-      setLocation("");
-      setDescription("");
-
-      // Refresh data
-      fetchData();
-    } catch (error) {
-      console.error("Error creating appointment:", error);
-      setMessage("Failed to book appointment. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const formatAvailabilityLabel = (availability: Availability) => {
-    const date = dayjs(availability.date).format("MMM DD, YYYY");
-    return `${date} - ${availability.startTime} to ${availability.endTime}`;
   };
 
   return (
@@ -140,25 +77,29 @@ export default function ClientPage() {
         ) : (
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 4,
               maxWidth: "1400px",
-              height: "60vh",
               margin: "0 auto",
               padding: 2,
             }}
           >
-            {/* Left Side - Booked Appointments */}
-            <Card sx={{ height: "60vh" }}>
-              <CardContent sx={{ height: "100%", overflow: "auto" }}>
+            <Card>
+              <CardContent>
                 <Typography variant="h5" gutterBottom>
                   My Appointments
                 </Typography>
                 {appointments.length === 0 ? (
-                  <Typography color="text.secondary">
-                    No appointments booked yet.
-                  </Typography>
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography color="text.secondary" gutterBottom>
+                      No appointments booked yet.
+                    </Typography>
+                    <Button 
+                      variant="outlined" 
+                      sx={{ mt: 2 }}
+                      onClick={() => router.push("/client/create-appointment")}
+                    >
+                      Book Your First Appointment
+                    </Button>
+                  </Box>
                 ) : (
                   <Box
                     sx={{
@@ -203,91 +144,6 @@ export default function ClientPage() {
                     ))}
                   </Box>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Right Side - Create New Appointment */}
-            <Card sx={{ height: "60vh" }}>
-              <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  Book New Appointment
-                </Typography>
-
-                <Box
-                  component="form"
-                  onSubmit={handleBookAppointment}
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2.5,
-                    mt: 2,
-                  }}
-                >
-                  <FormControl fullWidth required>
-                    <InputLabel>Select Time Slot</InputLabel>
-                    <Select
-                      value={
-                        selectedAvailability?.availabilityId?.toString() || ""
-                      }
-                      label="Select Time Slot"
-                      onChange={(e) => {
-                        const selected = availabilities.find(
-                          (a) => a.availabilityId?.toString() === e.target.value
-                        );
-                        setSelectedAvailability(selected || null);
-                      }}
-                    >
-                      {availabilities.map((availability) => (
-                        <MenuItem
-                          key={availability.availabilityId}
-                          value={availability.availabilityId?.toString()}
-                        >
-                          {formatAvailabilityLabel(availability)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <TextField
-                    label="Location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Enter appointment location"
-                    required
-                    fullWidth
-                  />
-
-                  <TextField
-                    label="Description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe the reason for your appointment"
-                    required
-                    multiline
-                    rows={4}
-                    fullWidth
-                  />
-
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={!selectedAvailability || submitting}
-                    fullWidth
-                    sx={{ mt: 1 }}
-                  >
-                    {submitting ? "Booking..." : "Book Appointment"}
-                  </Button>
-
-                  {message && (
-                    <Alert
-                      severity={
-                        message.includes("success") ? "success" : "error"
-                      }
-                    >
-                      {message}
-                    </Alert>
-                  )}
-                </Box>
               </CardContent>
             </Card>
           </Box>
