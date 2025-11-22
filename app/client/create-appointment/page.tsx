@@ -187,242 +187,244 @@ export default function CreateAppointmentPage() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-        <div className={styles.page}>
-      <div className={styles.pageContent}>
-        <h1>Book New Appointment</h1>
+      <div className={styles.page}>
+        <div className={styles.pageContent}>
+          <h1>Book New Appointment</h1>
 
-        {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "60vh",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              maxWidth: "1200px",
-              margin: "0 auto",
-              padding: 2,
-            }}
-          >
+          {loading ? (
             <Box
-              component="form"
-              onSubmit={handleBookAppointment}
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                gap: 3,
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
               }}
             >
-              {/* Step 1: Select Caregiver */}
-              <div className={styles.caregiverSelection}>
-                <h1 className={styles.sectionTitle}>Select a Caregiver</h1>
-                <div 
-                  className={`${styles.caregiverCard} ${selectedCaregiver === null ? styles.selected : ''}`} 
-                  onClick={() => {
-                    setSelectedCaregiver(null);
-                    setSelectedDate(null);
-                    setSelectedAvailability(null);
-                  }}
-                >
-                    <img className={styles.caregiverImage} src="/images/DefaultCaretaker.jpg" alt="Default Caretaker" />
-                    <Typography variant="body2" color="text.secondary">
-                      Any Caregiver
-                    </Typography>
-                </div>
-                {caregivers && caregivers.length !== 0 && caregivers.map((caregiver) => (
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                maxWidth: "1200px",
+                margin: "0 auto",
+                padding: 2,
+              }}
+            >
+              <Box
+                component="form"
+                onSubmit={handleBookAppointment}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 3,
+                }}
+              >
+                {/* Step 1: Select Caregiver */}
+                <div className={styles.selectCaregiverContainer}>
+                  <h1 className={styles.sectionTitle}>Select a Caregiver</h1>
+                  <div className={styles.caregiverSelection}>
                     <div 
-                      className={`${styles.caregiverCard} ${selectedCaregiver?.caregiverId === caregiver.caregiverId ? styles.selected : ''}`} 
+                      className={`${styles.caregiverCard} ${selectedCaregiver === null ? styles.selected : ''}`} 
                       onClick={() => {
-                        setSelectedCaregiver(caregiver);
+                        setSelectedCaregiver(null);
                         setSelectedDate(null);
                         setSelectedAvailability(null);
                       }}
-                      key={caregiver.userId}
-                    >
-                        <img className={styles.caregiverImage} src={caregiver.imageUrl || "/images/DefaultCaretaker.jpg"} alt={caregiver.name} /> 
+                      >
+                        <img className={styles.caregiverImage} src="/images/DefaultCaretaker.jpg" alt="Default Caretaker" />
                         <Typography variant="body2" color="text.secondary">
-                          {caregiver.name}
+                          Any Caregiver
                         </Typography>
                     </div>
-                ))}
-              </div>
-              {/* Step 2: Select Date from Calendar */}
-              {(selectedCaregiver || selectedCaregiver === null) && (
-                <div className={styles.dateSelectionContainer}>
-                    <Typography variant="h5" gutterBottom>
-                      Step 2: Select a Date
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Only dates with available time slots are selectable
-                    </Typography>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DateCalendar
-                        value={selectedDate}
-                        onChange={(newValue) => {
-                            setSelectedDate(newValue);
-                            setSelectedAvailability(null);
+                    {caregivers && caregivers.length !== 0 && caregivers.map((caregiver) => (
+                        <div 
+                        className={`${styles.caregiverCard} ${selectedCaregiver?.caregiverId === caregiver.caregiverId ? styles.selected : ''}`} 
+                        onClick={() => {
+                          setSelectedCaregiver(caregiver);
+                          setSelectedDate(null);
+                          setSelectedAvailability(null);
                         }}
-                        shouldDisableDate={shouldDisableDate}
-                        sx={{
-                            width: '500px',
-                            height: 'auto',
-                            margin: '0 auto',
-                            maxHeight: 'none',
-                            '& .MuiPickersSlideTransition-root': {
-                                height: '400px',
-                            },
-                            '& .MuiPickersDay-root': {
-                                fontSize: '1.2rem',
-                                width: '48px',
-                                height: '48px',
-                                '&.Mui-disabled': {
-                                    color: '#666',
-                                },
-                            },
-                            '& .MuiDayCalendar-header': {
-                                '& .MuiTypography-root': {
-                                    fontSize: '1.1rem',
-                                    width: '48px',
-                                },
-                            },
-                            '& .MuiPickersCalendarHeader-label': {
-                                fontSize: '1.3rem',
-                            },
-                        }}
-                        />
-                    </LocalizationProvider>
+                        key={caregiver.userId}
+                        >
+                            <img className={styles.caregiverImage} src={caregiver.imageUrl || "/images/DefaultCaretaker.jpg"} alt={caregiver.name} /> 
+                            <Typography variant="body2" color="text.secondary">
+                              {caregiver.name}
+                            </Typography>
+                        </div>
+                    ))}
+                  </div>
                 </div>
-              )}
-
-              {/* Step 3: Select Time Slot */}
-              {selectedDate && availabilitiesForDate.length > 0 && (
-                  <Card>
-                  <CardContent>
-                    <Typography variant="h5" gutterBottom>
-                      Step 3: Select a Time Slot
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Available times for {selectedDate.format("MMMM D, YYYY")}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                      {availabilitiesForDate.map((availability) => (
-                        <Chip
-                          key={availability.availabilityId}
-                          label={formatTimeSlot(availability)}
-                          onClick={() => setSelectedAvailability(availability)}
-                          color={selectedAvailability?.availabilityId === availability.availabilityId ? "primary" : "default"}
-                          sx={{
-                            fontSize: '1rem',
-                            padding: '20px 10px',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              backgroundColor: selectedAvailability?.availabilityId === availability.availabilityId 
-                                ? undefined 
-                                : '#333',
-                            },
+                {/* Step 2: Select Date from Calendar */}
+                {(selectedCaregiver || selectedCaregiver === null) && (
+                  <div className={styles.dateSelectionContainer}>
+                      <Typography variant="h5" gutterBottom>
+                        Step 2: Select a Date
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Only dates with available time slots are selectable
+                      </Typography>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DateCalendar
+                          value={selectedDate}
+                          onChange={(newValue) => {
+                              setSelectedDate(newValue);
+                              setSelectedAvailability(null);
                           }}
+                          shouldDisableDate={shouldDisableDate}
+                          sx={{
+                              width: '500px',
+                              height: 'auto',
+                              margin: '0 auto',
+                              maxHeight: 'none',
+                              '& .MuiPickersSlideTransition-root': {
+                                  height: '400px',
+                              },
+                              '& .MuiPickersDay-root': {
+                                  fontSize: '1.2rem',
+                                  width: '48px',
+                                  height: '48px',
+                                  '&.Mui-disabled': {
+                                      color: '#666',
+                                  },
+                              },
+                              '& .MuiDayCalendar-header': {
+                                  '& .MuiTypography-root': {
+                                      fontSize: '1.1rem',
+                                      width: '48px',
+                                  },
+                              },
+                              '& .MuiPickersCalendarHeader-label': {
+                                  fontSize: '1.3rem',
+                              },
+                          }}
+                          />
+                      </LocalizationProvider>
+                  </div>
+                )}
+
+                {/* Step 3: Select Time Slot */}
+                {selectedDate && availabilitiesForDate.length > 0 && (
+                    <Card>
+                    <CardContent>
+                      <Typography variant="h5" gutterBottom>
+                        Step 3: Select a Time Slot
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Available times for {selectedDate.format("MMMM D, YYYY")}
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        {availabilitiesForDate.map((availability) => (
+                          <Chip
+                            key={availability.availabilityId}
+                            label={formatTimeSlot(availability)}
+                            onClick={() => setSelectedAvailability(availability)}
+                            color={selectedAvailability?.availabilityId === availability.availabilityId ? "primary" : "default"}
+                            sx={{
+                              fontSize: '1rem',
+                              padding: '20px 10px',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                backgroundColor: selectedAvailability?.availabilityId === availability.availabilityId 
+                                  ? undefined 
+                                  : '#333',
+                              },
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Step 4: Appointment Details */}
+                {selectedAvailability && (
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h5" gutterBottom>
+                        Step 4: Appointment Details
+                      </Typography>
+
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+                        <Box
+                          sx={{
+                            padding: 2,
+                            border: "1px solid #333",
+                            borderRadius: 1,
+                            backgroundColor: "#2a2a2a",
+                          }}
+                        >
+                          <Typography variant="body1" fontWeight="bold" gutterBottom>
+                            Selected Appointment
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Caregiver: {selectedCaregiver?.name || "Any Available Caregiver"}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Date: {selectedDate?.format("dddd, MMMM D, YYYY")}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Time: {selectedAvailability.startTime} - {selectedAvailability.endTime}
+                          </Typography>
+                        </Box>
+
+                        <TextField
+                          label="Location"
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          placeholder="Enter appointment location"
+                          required
+                          fullWidth
+                          helperText="Where would you like the appointment to take place?"
                         />
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              )}
 
-              {/* Step 4: Appointment Details */}
-              {selectedAvailability && (
-                <Card>
-                  <CardContent>
-                    <Typography variant="h5" gutterBottom>
-                      Step 4: Appointment Details
-                    </Typography>
-
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-                      <Box
-                        sx={{
-                          padding: 2,
-                          border: "1px solid #333",
-                          borderRadius: 1,
-                          backgroundColor: "#2a2a2a",
-                        }}
-                      >
-                        <Typography variant="body1" fontWeight="bold" gutterBottom>
-                          Selected Appointment
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Caregiver: {selectedCaregiver?.name || "Any Available Caregiver"}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Date: {selectedDate?.format("dddd, MMMM D, YYYY")}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Time: {selectedAvailability.startTime} - {selectedAvailability.endTime}
-                        </Typography>
-                      </Box>
-
-                      <TextField
-                        label="Location"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="Enter appointment location"
-                        required
-                        fullWidth
-                        helperText="Where would you like the appointment to take place?"
-                      />
-
-                      <TextField
-                        label="Description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Describe the reason for your appointment"
-                        required
-                        multiline
-                        rows={6}
-                        fullWidth
-                        helperText="Please provide details about what you need help with"
-                      />
-
-                      <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                        <Button
-                          type="button"
-                          variant="outlined"
-                          onClick={() => router.push("/client")}
+                        <TextField
+                          label="Description"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Describe the reason for your appointment"
+                          required
+                          multiline
+                          rows={6}
                           fullWidth
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          variant="contained"
-                          disabled={submitting}
-                          fullWidth
-                        >
-                          {submitting ? "Booking..." : "Book Appointment"}
-                        </Button>
-                      </Box>
+                          helperText="Please provide details about what you need help with"
+                        />
 
-                      {message && (
-                        <Alert
-                          severity={
-                            message.includes("success") ? "success" : "error"
-                          }
-                        >
-                          {message}
-                        </Alert>
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              )}
+                        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                          <Button
+                            type="button"
+                            variant="outlined"
+                            onClick={() => router.push("/client")}
+                            fullWidth
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={submitting}
+                            fullWidth
+                          >
+                            {submitting ? "Booking..." : "Book Appointment"}
+                          </Button>
+                        </Box>
+
+                        {message && (
+                          <Alert
+                            severity={
+                              message.includes("success") ? "success" : "error"
+                            }
+                          >
+                            {message}
+                          </Alert>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                )}
+              </Box>
             </Box>
-          </Box>
-        )}
-      </div>
+          )}
+        </div>
       </div>
     </ThemeProvider>
   );
