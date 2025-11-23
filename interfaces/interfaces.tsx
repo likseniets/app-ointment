@@ -1,7 +1,20 @@
 export enum UserRole {
-  Caregiver = 1,
-  Client = 2,
-  Admin = 3,
+  Caregiver,
+  Client,
+  Admin,
+}
+
+export enum AppointmentTask {
+  AssistanceWithDailyLiving,
+  MedicationReminders,
+  Shopping,
+  HouseholdChores,
+  PersonalHygiene,
+  MealPreparation,
+  Transportation,
+  Companionship,
+  PhysicalTherapyAssistance,
+  MedicalAppointmentSupport,
 }
 
 export interface User {
@@ -11,6 +24,14 @@ export interface User {
   adress: string;
   phone: string;
   email: string;
+  imageUrl?: string | null;
+}
+
+export interface UpdateUserDTO {
+  name?: string;
+  adress?: string;
+  phone?: string;
+  email?: string;
   imageUrl?: string | null;
 }
 
@@ -33,7 +54,23 @@ export interface Appointment {
   clientId: number;
   client: User;
   location: string;
-  description: string;
+  task: string;
+}
+
+export interface PendingRequest {
+  changeRequestId: number;
+  appointmentId: number;
+  requestedByUserId: number;
+  requestedByName: string;
+  oldTask: AppointmentTask;
+  newTask?: AppointmentTask | null;
+  oldDateTime: string; // ISO 8601 date string
+  newDateTime?: string | null; // ISO 8601 date string
+  status: string;
+  requestedAt: string; // ISO 8601 date string
+  respondedAt?: string | null; // ISO 8601 date string
+  respondedByUserId?: number | null;
+  respondedByName?: string | null;
 }
 
 export interface Availability {

@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "../page.module.css";
 import {
   Button,
   Card,
   CardContent,
   Typography,
   Box,
-  Chip,
   ThemeProvider,
   createTheme,
 } from "@mui/material";
@@ -31,8 +29,10 @@ import {
   Caregiver,
   CreateAvailabilityDTO,
   UpdateAvailabilityResponse,
+  UserRole,
 } from "../../interfaces/interfaces";
-import { create } from "domain";
+import { ProtectedRoute } from "@/components/index";
+import GlobalStyle from "../globalStyle.module.css";
 
 const darkTheme = createTheme({
   palette: {
@@ -50,22 +50,26 @@ const darkTheme = createTheme({
 export default function CaregiverPage() {
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [caregiver, setCaregiver] = useState<Caregiver | null>(null);
 
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [startTime, setStartTime] = useState<Dayjs | null>(null);
   const [endTime, setEndTime] = useState<Dayjs | null>(null);
 
-  const caregiver: Caregiver = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user") as string)
-    : null;
+  useEffect(() => {
+    // Get caregiver data from localStorage
+    const userStr =
+      typeof window !== "undefined" ? localStorage.getItem("user") : null;
+    if (userStr) {
+      setCaregiver(JSON.parse(userStr));
+    }
+  }, []);
 
   const fetchUserData = async () => {
     console.log(caregiver);
-    const Appointments = await getCaregiverAppointments(caregiver.userId);
+    const Appointments = await getCaregiverAppointments();
     console.log(Appointments);
-    const Availabilities: Availability[] = await getAvailabilities(
-      caregiver.userId
-    );
+    const Availabilities: Availability[] = await getAvailabilities();
     console.log(Availabilities);
     setAvailabilities(Availabilities);
     setAppointments(Appointments);
@@ -101,170 +105,49 @@ export default function CaregiverPage() {
 
   useEffect(() => {
     fetchUserData();
-    // Fetch availabilities and appointments from backend here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <div className={styles.page}>
-        <h1>Caregiver Dashboard</h1>
+    <ProtectedRoute allowedRoles={[UserRole.Caregiver]}>
+      <ThemeProvider theme={darkTheme}>
+        <div className={GlobalStyle.page}>
+          <h1>Caregiver Dashboard</h1>
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 4,
-            maxWidth: "1400px",
-            height: "60vh",
-            margin: "0 auto",
-            padding: 2,
-          }}
-        >
-          {/* Left Side - Booked Appointments */}
-          <Card sx={{ height: "60vh" }}>
-            <CardContent sx={{ height: "100%" }}>
-              <Typography variant="h5" gutterBottom>
-                Booked Appointments
-              </Typography>
-              {appointments.length === 0 ? (
-                <Typography color="text.secondary">
-                  No appointments booked yet.
-                </Typography>
-              ) : (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                    mt: 2,
-                    overflowY: "auto",
-                  }}
-                >
-                  {appointments.map((appointment) => (
-                    <Box
-                      key={appointment.appointmentId}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: 2,
-                        border: "1px solid #333",
-                        borderRadius: 1,
-                        backgroundColor: "#2a2a2a",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body1" fontWeight="bold">
-                          {appointment.client.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {dayjs(appointment.date).format("DD.MM.YYYY HH:mm")}{" "}
-                          at {appointment.location}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Right Side - Availability Management */}
           <Box
             sx={{
-              display: "flex",
-              flexDirection: "column",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
               gap: 4,
+              maxWidth: "1400px",
               height: "60vh",
+              margin: "0 auto",
+              padding: 2,
             }}
           >
-            {/* Add Availability Section */}
-            <Card sx={{ height: "420px" }}>
-              <CardContent>
+            {/* Left Side - Booked Appointments */}
+            <Card sx={{ height: "60vh" }}>
+              <CardContent sx={{ height: "100%" }}>
                 <Typography variant="h5" gutterBottom>
-                  Set Your Availability
+                  Booked Appointments
                 </Typography>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {appointments.length === 0 ? (
+                  <Typography color="text.secondary">
+                    No appointments booked yet.
+                  </Typography>
+                ) : (
                   <Box
                     sx={{
                       display: "flex",
                       flexDirection: "column",
                       gap: 2,
                       mt: 2,
+                      overflowY: "auto",
                     }}
                   >
-                    <DatePicker
-                      label="Select Date"
-                      value={selectedDate}
-                      onChange={(newValue) => setSelectedDate(newValue)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          onClick: (e) => {
-                            e.currentTarget.querySelector("button")?.click();
-                          },
-                        },
-                      }}
-                    />
-                    <Box sx={{ display: "flex", gap: 2 }}>
-                      <TimePicker
-                        label="Start Time"
-                        value={startTime}
-                        onChange={(newValue) => setStartTime(newValue)}
-                        ampm={false}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            onClick: (e) => {
-                              e.currentTarget.querySelector("button")?.click();
-                            },
-                          },
-                        }}
-                      />
-                      <TimePicker
-                        label="End Time"
-                        value={endTime}
-                        onChange={(newValue) => setEndTime(newValue)}
-                        ampm={false}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            onClick: (e) => {
-                              e.currentTarget.querySelector("button")?.click();
-                            },
-                          },
-                        }}
-                      />
-                    </Box>
-                    <Button variant="contained" onClick={handleAddAvailability}>
-                      Add Availability
-                    </Button>
-                  </Box>
-                </LocalizationProvider>
-              </CardContent>
-            </Card>
-
-            {/* Current Availabilities */}
-            <Card sx={{ height: "100%", paddingBottom: 5 }}>
-              <CardContent sx={{ height: "100%" }}>
-                <Typography variant="h5" gutterBottom>
-                  Your Availabilities
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                    mt: 2,
-                    overflowY: "auto",
-                    height: "100%",
-                  }}
-                >
-                  {availabilities &&
-                    availabilities.length > 0 &&
-                    availabilities.map((availability: Availability) => (
+                    {appointments.map((appointment) => (
                       <Box
-                        key={availability.availabilityId}
+                        key={appointment.appointmentId}
                         sx={{
                           display: "flex",
                           justifyContent: "space-between",
@@ -277,32 +160,162 @@ export default function CaregiverPage() {
                       >
                         <Box>
                           <Typography variant="body1" fontWeight="bold">
-                            {dayjs(availability.date).format("DD.MM.YYYY")}
+                            {appointment.client.name}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {availability.startTime} - {availability.endTime}
+                            {dayjs(appointment.date).format("DD.MM.YYYY HH:mm")}{" "}
+                            at {appointment.location}
                           </Typography>
                         </Box>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          onClick={() =>
-                            handleDeleteAvailability(
-                              availability.availabilityId!
-                            )
-                          }
-                        >
-                          Delete
-                        </Button>
                       </Box>
                     ))}
-                </Box>
+                  </Box>
+                )}
               </CardContent>
             </Card>
+
+            {/* Right Side - Availability Management */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+                height: "60vh",
+              }}
+            >
+              {/* Add Availability Section */}
+              <Card sx={{ height: "420px" }}>
+                <CardContent>
+                  <Typography variant="h5" gutterBottom>
+                    Set Your Availability
+                  </Typography>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                        mt: 2,
+                      }}
+                    >
+                      <DatePicker
+                        label="Select Date"
+                        value={selectedDate}
+                        onChange={(newValue) => setSelectedDate(newValue)}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            onClick: (e) => {
+                              e.currentTarget.querySelector("button")?.click();
+                            },
+                          },
+                        }}
+                      />
+                      <Box sx={{ display: "flex", gap: 2 }}>
+                        <TimePicker
+                          label="Start Time"
+                          value={startTime}
+                          onChange={(newValue) => setStartTime(newValue)}
+                          ampm={false}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              onClick: (e) => {
+                                e.currentTarget
+                                  .querySelector("button")
+                                  ?.click();
+                              },
+                            },
+                          }}
+                        />
+                        <TimePicker
+                          label="End Time"
+                          value={endTime}
+                          onChange={(newValue) => setEndTime(newValue)}
+                          ampm={false}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              onClick: (e) => {
+                                e.currentTarget
+                                  .querySelector("button")
+                                  ?.click();
+                              },
+                            },
+                          }}
+                        />
+                      </Box>
+                      <Button
+                        variant="contained"
+                        onClick={handleAddAvailability}
+                      >
+                        Add Availability
+                      </Button>
+                    </Box>
+                  </LocalizationProvider>
+                </CardContent>
+              </Card>
+
+              {/* Current Availabilities */}
+              <Card sx={{ height: "100%", paddingBottom: 5 }}>
+                <CardContent sx={{ height: "100%" }}>
+                  <Typography variant="h5" gutterBottom>
+                    Your Availabilities
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      mt: 2,
+                      overflowY: "auto",
+                      height: "100%",
+                    }}
+                  >
+                    {availabilities &&
+                      availabilities.length > 0 &&
+                      availabilities.map((availability: Availability) => (
+                        <Box
+                          key={availability.availabilityId}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: 2,
+                            border: "1px solid #333",
+                            borderRadius: 1,
+                            backgroundColor: "#2a2a2a",
+                          }}
+                        >
+                          <Box>
+                            <Typography variant="body1" fontWeight="bold">
+                              {dayjs(availability.date).format("DD.MM.YYYY")}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {availability.startTime} - {availability.endTime}
+                            </Typography>
+                          </Box>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            onClick={() =>
+                              handleDeleteAvailability(
+                                availability.availabilityId!
+                              )
+                            }
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
           </Box>
-        </Box>
-      </div>
-    </ThemeProvider>
+        </div>
+      </ThemeProvider>
+    </ProtectedRoute>
   );
 }

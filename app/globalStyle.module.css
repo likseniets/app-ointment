@@ -1,0 +1,15 @@
+.page {
+    color-scheme: dark;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 95vh;
+    padding-top: 30px;
+    width: 100vw;
+}
+
+.pageContent {
+    display: flex;
+    flex-direction: column;
+    width: 75%;
+}

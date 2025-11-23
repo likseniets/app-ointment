@@ -1,0 +1,40 @@
+.pageContainer {
+    margin-top: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.appointmentsSection {
+    height: 100%;
+    width: 55%;
+}
+
+.profileAndPendingSection {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+}
+
+.profileContainer {
+  display: flex;
+  align-items: center;
+}
+
+.profileDetails {
+  margin-left: 20px;
+}
+
+.profileImage {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}
+
+.pendingSection {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
