@@ -14,6 +14,12 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Alert,
+  Snackbar,
 } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -21,6 +27,7 @@ import {
   LocalizationProvider,
   DatePicker,
   TimePicker,
+  DateCalendar,
 } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs, { Dayjs } from 'dayjs'
@@ -73,6 +80,12 @@ export default function CaregiverPage() {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
   const [startTime, setStartTime] = useState<Dayjs | null>(null)
   const [endTime, setEndTime] = useState<Dayjs | null>(null)
+  const [slotLength, setSlotLength] = useState<number>(60)
+
+  const [calendarDate, setCalendarDate] = useState<Dayjs | null>(null)
+
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [openError, setOpenError] = useState(false)
 
   const [openEditDialog, setOpenEditDialog] = useState(false)
   const [editingAvailability, setEditingAvailability] =
@@ -80,6 +93,7 @@ export default function CaregiverPage() {
   const [editDate, setEditDate] = useState<Dayjs | null>(null)
   const [editStartTime, setEditStartTime] = useState<Dayjs | null>(null)
   const [editEndTime, setEditEndTime] = useState<Dayjs | null>(null)
+  const [editSlotLength, setEditSlotLength] = useState<number>(60)
 
   useEffect(() => {
     // Get caregiver data from localStorage
@@ -137,10 +151,11 @@ export default function CaregiverPage() {
     try {
       if (selectedDate && startTime && endTime) {
         const availability: CreateAvailabilityDTO = {
-          date: selectedDate.format('YYYY-MM-DD'),
+          date: selectedDate.format('YYYY-MM-DDTHH:mm:ss'),
           startTime: startTime.format('HH:mm'),
           endTime: endTime.format('HH:mm'),
           caregiverId: caregiver ? caregiver.userId : 0,
+          slotLengthMinutes: slotLength,
         }
         const response: UpdateAvailabilityResponse = await createAvailability(
           availability
@@ -149,9 +164,16 @@ export default function CaregiverPage() {
         setSelectedDate(null)
         setStartTime(null)
         setEndTime(null)
+        setSlotLength(60)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding availability:', error)
+      if (error.message) {
+        setErrorMessage(error.message)
+      } else {
+        setErrorMessage('Failed to create availability')
+      }
+      setOpenError(true)
     }
   }
 
@@ -166,6 +188,7 @@ export default function CaregiverPage() {
     setEditDate(dayjs(availability.date))
     setEditStartTime(dayjs(`2000-01-01 ${availability.startTime}`))
     setEditEndTime(dayjs(`2000-01-01 ${availability.endTime}`))
+    setEditSlotLength(60) // Default to 60 minutes for editing
     setOpenEditDialog(true)
   }
 
@@ -175,16 +198,18 @@ export default function CaregiverPage() {
     setEditDate(null)
     setEditStartTime(null)
     setEditEndTime(null)
+    setEditSlotLength(60)
   }
 
   const handleUpdateAvailability = async () => {
     try {
       if (editingAvailability && editDate && editStartTime && editEndTime) {
         const updatedData = {
-          date: editDate.format('YYYY-MM-DD'),
+          date: editDate.format('YYYY-MM-DDTHH:mm:ss'),
           startTime: editStartTime.format('HH:mm'),
           endTime: editEndTime.format('HH:mm'),
           caregiverId: caregiver ? caregiver.userId : 0,
+          slotLengthMinutes: editSlotLength,
         }
         await updateAvailability(
           editingAvailability.availabilityId!,
@@ -267,8 +292,9 @@ export default function CaregiverPage() {
                               value={startTime}
                               onChange={(newValue) => setStartTime(newValue)}
                               ampm={false}
-                              views={['hours']}
-                              format="HH:00"
+                              views={['hours', 'minutes']}
+                              format="HH:mm"
+                              minutesStep={15}
                               slotProps={{
                                 textField: {
                                   fullWidth: true,
@@ -285,8 +311,9 @@ export default function CaregiverPage() {
                               value={endTime}
                               onChange={(newValue) => setEndTime(newValue)}
                               ampm={false}
-                              views={['hours']}
-                              format="HH:00"
+                              views={['hours', 'minutes']}
+                              format="HH:mm"
+                              minutesStep={15}
                               slotProps={{
                                 textField: {
                                   fullWidth: true,
@@ -299,6 +326,21 @@ export default function CaregiverPage() {
                               }}
                             />
                           </Box>
+                          <FormControl fullWidth>
+                            <InputLabel>Time Slot Length</InputLabel>
+                            <Select
+                              value={slotLength}
+                              onChange={(e) =>
+                                setSlotLength(Number(e.target.value))
+                              }
+                              label="Time Slot Length"
+                            >
+                              <MenuItem value={30}>30 minutes</MenuItem>
+                              <MenuItem value={60}>60 minutes</MenuItem>
+                              <MenuItem value={90}>90 minutes</MenuItem>
+                              <MenuItem value={120}>120 minutes</MenuItem>
+                            </Select>
+                          </FormControl>
                           <Button
                             variant="contained"
                             onClick={handleAddAvailability}
@@ -311,58 +353,155 @@ export default function CaregiverPage() {
                     </CardContent>
                   </Card>
                 </div>
-                {/* Current Availabilities */}
+                {/* Calendar View */}
                 <div className={styles.availabilitySection}>
                   <Typography variant="h5" gutterBottom>
                     Your Availabilities
                   </Typography>
-                  <div className={styles.availabilityList}>
-                    {availabilities &&
-                      availabilities.length > 0 &&
-                      availabilities.map((availability: Availability) => (
-                        <Box
-                          key={availability.availabilityId}
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: 2,
-                            border: '1px solid #333',
-                            borderRadius: 1,
-                            backgroundColor: '#2a2a2a',
-                          }}
-                        >
-                          <Box>
-                            <Typography variant="body1" fontWeight="bold">
-                              {dayjs(availability.date).format('DD.MM.YYYY')}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {availability.startTime} - {availability.endTime}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <IconButton
-                              color="primary"
-                              size="small"
-                              onClick={() => handleOpenEditDialog(availability)}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              color="error"
-                              size="small"
-                              onClick={() =>
-                                handleDeleteAvailability(
-                                  availability.availabilityId!
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        {/* Calendar on the left */}
+                        <Box sx={{ flex: '0 0 auto' }}>
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DateCalendar
+                              value={calendarDate}
+                              onChange={(newValue) => setCalendarDate(newValue)}
+                              sx={{
+                                maxWidth: '100%',
+                                '& .MuiPickersCalendarHeader-root': {
+                                  paddingLeft: 2,
+                                  paddingRight: 1,
+                                },
+                                '& .MuiDayCalendar-header': {
+                                  justifyContent: 'space-between',
+                                  paddingLeft: 1,
+                                  paddingRight: 1,
+                                },
+                                '& .MuiDayCalendar-weekContainer': {
+                                  justifyContent: 'space-between',
+                                  margin: 0,
+                                },
+                                '& .MuiPickersDay-root': {
+                                  fontSize: '0.875rem',
+                                  margin: 0.25,
+                                },
+                                '& .MuiDayCalendar-monthContainer': {
+                                  position: 'relative',
+                                },
+                                '& .MuiPickersSlideTransition-root': {
+                                  minHeight: 240,
+                                },
+                              }}
+                              showDaysOutsideCurrentMonth
+                              shouldDisableDate={(date) => {
+                                const dateStr = date.format('YYYY-MM-DD')
+                                return !availabilities.some(
+                                  (av) =>
+                                    dayjs(av.date).format('YYYY-MM-DD') ===
+                                    dateStr
                                 )
-                              }
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Box>
+                              }}
+                            />
+                          </LocalizationProvider>
                         </Box>
-                      ))}
-                  </div>
+
+                        {/* Time Slots on the right */}
+                        {calendarDate && (
+                          <Box
+                            sx={{
+                              flex: 1,
+                              borderLeft: '1px solid #333',
+                              paddingLeft: 2,
+                            }}
+                          >
+                            <Typography
+                              variant="h6"
+                              gutterBottom
+                              sx={{ mb: 2 }}
+                            >
+                              Time Slots for {calendarDate.format('DD.MM.YYYY')}
+                            </Typography>
+                            <Box
+                              sx={{
+                                maxHeight: 320,
+                                overflowY: 'auto',
+                                pr: 1,
+                                '&::-webkit-scrollbar': {
+                                  width: '8px',
+                                },
+                                '&::-webkit-scrollbar-track': {
+                                  backgroundColor: '#1a1a1a',
+                                  borderRadius: '4px',
+                                },
+                                '&::-webkit-scrollbar-thumb': {
+                                  backgroundColor: '#555',
+                                  borderRadius: '4px',
+                                  '&:hover': {
+                                    backgroundColor: '#777',
+                                  },
+                                },
+                              }}
+                            >
+                              {availabilities
+                                .filter(
+                                  (av) =>
+                                    dayjs(av.date).format('YYYY-MM-DD') ===
+                                    calendarDate.format('YYYY-MM-DD')
+                                )
+                                .map((availability: Availability) => (
+                                  <Box
+                                    key={availability.availabilityId}
+                                    sx={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      padding: 1,
+                                      border: '1px solid #333',
+                                      borderRadius: 1,
+                                      backgroundColor: '#2a2a2a',
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="body2"
+                                      fontWeight="bold"
+                                    >
+                                      {availability.startTime} -{' '}
+                                      {availability.endTime}
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                      <IconButton
+                                        color="primary"
+                                        size="small"
+                                        onClick={() =>
+                                          handleOpenEditDialog(availability)
+                                        }
+                                        sx={{ padding: 0.5 }}
+                                      >
+                                        <EditIcon fontSize="small" />
+                                      </IconButton>
+                                      <IconButton
+                                        color="error"
+                                        size="small"
+                                        onClick={() =>
+                                          handleDeleteAvailability(
+                                            availability.availabilityId!
+                                          )
+                                        }
+                                        sx={{ padding: 0.5 }}
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </IconButton>
+                                    </Box>
+                                  </Box>
+                                ))}
+                            </Box>
+                          </Box>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>
@@ -406,8 +545,9 @@ export default function CaregiverPage() {
                     value={editStartTime}
                     onChange={(newValue) => setEditStartTime(newValue)}
                     ampm={false}
-                    views={['hours']}
-                    format="HH:00"
+                    views={['hours', 'minutes']}
+                    format="HH:mm"
+                    minutesStep={15}
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -422,8 +562,9 @@ export default function CaregiverPage() {
                     value={editEndTime}
                     onChange={(newValue) => setEditEndTime(newValue)}
                     ampm={false}
-                    views={['hours']}
-                    format="HH:00"
+                    views={['hours', 'minutes']}
+                    format="HH:mm"
+                    minutesStep={15}
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -434,6 +575,19 @@ export default function CaregiverPage() {
                     }}
                   />
                 </Box>
+                <FormControl fullWidth>
+                  <InputLabel>Time Slot Length</InputLabel>
+                  <Select
+                    value={editSlotLength}
+                    onChange={(e) => setEditSlotLength(Number(e.target.value))}
+                    label="Time Slot Length"
+                  >
+                    <MenuItem value={30}>30 minutes</MenuItem>
+                    <MenuItem value={60}>60 minutes</MenuItem>
+                    <MenuItem value={90}>90 minutes</MenuItem>
+                    <MenuItem value={120}>120 minutes</MenuItem>
+                  </Select>
+                </FormControl>
               </Box>
             </LocalizationProvider>
           </DialogContent>
@@ -448,6 +602,22 @@ export default function CaregiverPage() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Error Snackbar */}
+        <Snackbar
+          open={openError}
+          autoHideDuration={6000}
+          onClose={() => setOpenError(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setOpenError(false)}
+            severity="error"
+            sx={{ width: '100%' }}
+          >
+            {errorMessage}
+          </Alert>
+        </Snackbar>
       </ThemeProvider>
     </ProtectedRoute>
   )

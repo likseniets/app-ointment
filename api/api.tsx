@@ -182,6 +182,12 @@ export const createAvailability = async (
     headers: getAuthHeaders(),
   })
   await handleResponse(response)
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(errorData.message || 'Failed to create availability')
+  }
+
   return response.json()
 }
 

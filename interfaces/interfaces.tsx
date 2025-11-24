@@ -87,6 +87,7 @@ export interface CreateAvailabilityDTO {
   startTime: string // Format: "HH:mm"
   endTime: string // Format: "HH:mm"
   caregiverId: number
+  slotLengthMinutes: number
 }
 
 export interface UpdateAvailabilityResponse {

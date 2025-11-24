@@ -69,6 +69,7 @@ export default function AdminAvailabilitiesPage() {
     date: '',
     startTime: '',
     endTime: '',
+    slotLengthMinutes: 60,
   })
 
   useEffect(() => {
@@ -100,6 +101,7 @@ export default function AdminAvailabilitiesPage() {
         date: dayjs(availability.date).format('YYYY-MM-DD'),
         startTime: availability.startTime,
         endTime: availability.endTime,
+        slotLengthMinutes: 60,
       })
     } else {
       setEditingAvailability(null)
@@ -108,6 +110,7 @@ export default function AdminAvailabilitiesPage() {
         date: '',
         startTime: '',
         endTime: '',
+        slotLengthMinutes: 60,
       })
     }
     setOpenDialog(true)
@@ -122,14 +125,18 @@ export default function AdminAvailabilitiesPage() {
   const handleSubmit = async () => {
     try {
       if (editingAvailability && editingAvailability.availabilityId) {
-        await updateAvailability(editingAvailability.availabilityId, formData)
+        await updateAvailability(editingAvailability.availabilityId, {
+          ...formData,
+          date: `${formData.date}T00:00:00`,
+        })
         setMessage('Availability updated successfully')
       } else {
         await createAvailability({
           caregiverId: formData.caregiverId,
-          date: formData.date,
+          date: `${formData.date}T00:00:00`,
           startTime: formData.startTime,
           endTime: formData.endTime,
+          slotLengthMinutes: formData.slotLengthMinutes,
         })
         setMessage('Availability created successfully')
       }
@@ -327,6 +334,7 @@ export default function AdminAvailabilitiesPage() {
                 fullWidth
                 required
                 InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 900 }}
               />
               <TextField
                 label="End Time"
@@ -338,7 +346,26 @@ export default function AdminAvailabilitiesPage() {
                 fullWidth
                 required
                 InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 900 }}
               />
+              <FormControl fullWidth>
+                <InputLabel>Time Slot Length</InputLabel>
+                <Select
+                  value={formData.slotLengthMinutes}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      slotLengthMinutes: Number(e.target.value),
+                    })
+                  }
+                  label="Time Slot Length"
+                >
+                  <MenuItem value={30}>30 minutes</MenuItem>
+                  <MenuItem value={60}>60 minutes</MenuItem>
+                  <MenuItem value={90}>90 minutes</MenuItem>
+                  <MenuItem value={120}>120 minutes</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
           </DialogContent>
           <DialogActions>
