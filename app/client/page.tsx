@@ -1,16 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 import {
   approveChangeRequest,
-  getClientAppointments,
+  getAppointments,
   getPendingRequests,
   getRequestedRequests,
   rejectChangeRequest,
   getCaregivers,
   createAppointment,
-} from "@/api/api";
+} from '@/api/api'
 import {
   Appointment,
   UserRole,
@@ -20,9 +20,9 @@ import {
   Client,
   Caregiver,
   AppointmentTask,
-} from "../../interfaces/interfaces";
-import styles from "./styles.module.css";
-import GlobalStyles from "../globalStyle.module.css";
+} from '../../interfaces/interfaces'
+import styles from './styles.module.css'
+import GlobalStyles from '../globalStyle.module.css'
 import {
   Button,
   Card,
@@ -40,225 +40,225 @@ import {
   SelectChangeEvent,
   MenuItem,
   Divider,
-} from "@mui/material";
-import dayjs, { Dayjs } from "dayjs";
-import { CollapseCard, ProtectedRoute } from "@/components/index";
-import { LocalizationProvider, DateCalendar } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+} from '@mui/material'
+import dayjs, { Dayjs } from 'dayjs'
+import { CollapseCard, ProtectedRoute } from '@/components/index'
+import { LocalizationProvider, DateCalendar } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 const darkTheme = createTheme({
   palette: {
-    mode: "dark",
+    mode: 'dark',
     primary: {
-      main: "#1976d2",
+      main: '#1976d2',
     },
     background: {
-      default: "#000000",
-      paper: "#1a1a1a",
+      default: '#000000',
+      paper: '#1a1a1a',
     },
   },
-});
+})
 
 interface MergedAppointment {
-  appointment: Appointment;
-  pendingRequest: PendingRequest | undefined;
-  isPending: PendingRequest | undefined;
+  appointment: Appointment
+  pendingRequest: PendingRequest | undefined
+  isPending: PendingRequest | undefined
 }
 
 export default function ClientPage() {
-  const [appointments, setAppointments] = useState<MergedAppointment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [client, setClient] = useState<User | null>(null);
-  const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
+  const [appointments, setAppointments] = useState<MergedAppointment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [client, setClient] = useState<User | null>(null)
+  const [caregivers, setCaregivers] = useState<Caregiver[]>([])
   const [selectedCaregiver, setSelectedCaregiver] = useState<Caregiver | null>(
     null
-  );
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  )
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
   const [availabilitiesForDate, setAvailabilitiesForDate] = useState<
     Availability[]
-  >([]);
+  >([])
   const [selectedAvailability, setSelectedAvailability] =
-    useState<Availability | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
-  const [appointmentTask, setAppointmentTask] = useState<string>("");
+    useState<Availability | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [message, setMessage] = useState('')
+  const [appointmentTask, setAppointmentTask] = useState<string>('')
 
   useEffect(() => {
     // Get client data from localStorage
     const userStr =
-      typeof window !== "undefined" ? localStorage.getItem("user") : null;
+      typeof window !== 'undefined' ? localStorage.getItem('user') : null
     if (userStr) {
-      setClient(JSON.parse(userStr));
+      setClient(JSON.parse(userStr))
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (client) {
-      fetchAppointments();
-      fetchCaregivers();
+      fetchAppointments()
+      fetchCaregivers()
     }
-  }, [client]);
+  }, [client])
 
   useEffect(() => {
     if (selectedDate && selectedCaregiver) {
-      filterAvailabilitiesForDate(selectedDate);
+      filterAvailabilitiesForDate(selectedDate)
     } else if (selectedDate && selectedCaregiver === null) {
       // "Any Caregiver" selected - show all availabilities from all caregivers
-      filterAllAvailabilitiesForDate(selectedDate);
+      filterAllAvailabilitiesForDate(selectedDate)
     } else {
-      setAvailabilitiesForDate([]);
-      setSelectedAvailability(null);
+      setAvailabilitiesForDate([])
+      setSelectedAvailability(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, selectedCaregiver]);
+  }, [selectedDate, selectedCaregiver])
 
   const fetchAppointments = async () => {
     try {
-      setLoading(true);
-      const appointmentsData = await getClientAppointments();
-      const requestedRequestsData = await getRequestedRequests();
-      const pendingRequestsData = await getPendingRequests();
+      setLoading(true)
+      const appointmentsData = await getAppointments()
+      const requestedRequestsData = await getRequestedRequests()
+      const pendingRequestsData = await getPendingRequests()
 
       const mergedAppointments: MergedAppointment[] = appointmentsData.map(
         (appointment: Appointment) => {
           const matchingRequest = requestedRequestsData.find(
             (req: PendingRequest) =>
               req.appointmentId === appointment.appointmentId
-          );
+          )
           const isPending = pendingRequestsData.find(
             (req: PendingRequest) =>
               req.appointmentId === appointment.appointmentId
-          );
+          )
           return {
             appointment: appointment,
             pendingRequest: matchingRequest || null,
             isPending: isPending || null,
-          };
+          }
         }
-      );
-      setAppointments(mergedAppointments);
+      )
+      setAppointments(mergedAppointments)
     } catch (error) {
-      console.error("Error fetching appointments:", error);
+      console.error('Error fetching appointments:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const fetchCaregivers = async () => {
     try {
-      setLoading(true);
-      const caregiversData = await getCaregivers();
-      setCaregivers(caregiversData);
-      console.log("Caregivers data:", caregiversData);
+      setLoading(true)
+      const caregiversData = await getCaregivers()
+      setCaregivers(caregiversData)
+      console.log('Caregivers data:', caregiversData)
     } catch (error) {
-      console.error("Error fetching caregivers:", error);
-      setMessage("Failed to load caregivers");
+      console.error('Error fetching caregivers:', error)
+      setMessage('Failed to load caregivers')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const filterAvailabilitiesForDate = (date: Dayjs) => {
     if (!selectedCaregiver?.availability) {
-      setAvailabilitiesForDate([]);
-      return;
+      setAvailabilitiesForDate([])
+      return
     }
 
-    const dateStr = date.format("YYYY-MM-DD");
+    const dateStr = date.format('YYYY-MM-DD')
     const filtered = selectedCaregiver.availability.filter((avail) =>
       avail.date.startsWith(dateStr)
-    );
-    setAvailabilitiesForDate(filtered);
-  };
+    )
+    setAvailabilitiesForDate(filtered)
+  }
 
   const filterAllAvailabilitiesForDate = (date: Dayjs) => {
-    const dateStr = date.format("YYYY-MM-DD");
-    const allAvailabilities: Availability[] = [];
+    const dateStr = date.format('YYYY-MM-DD')
+    const allAvailabilities: Availability[] = []
 
     caregivers.forEach((caregiver) => {
       if (caregiver.availability) {
         const filtered = caregiver.availability.filter((avail) =>
           avail.date.startsWith(dateStr)
-        );
-        allAvailabilities.push(...filtered);
+        )
+        allAvailabilities.push(...filtered)
       }
-    });
+    })
 
-    setAvailabilitiesForDate(allAvailabilities);
-  };
+    setAvailabilitiesForDate(allAvailabilities)
+  }
 
   const getDatesWithAvailability = (): string[] => {
     if (selectedCaregiver === null) {
       // "Any Caregiver" - get all dates from all caregivers
-      const allDates = new Set<string>();
+      const allDates = new Set<string>()
       caregivers.forEach((caregiver) => {
         if (caregiver.availability) {
           caregiver.availability.forEach((avail) => {
-            allDates.add(dayjs(avail.date).format("YYYY-MM-DD"));
-          });
+            allDates.add(dayjs(avail.date).format('YYYY-MM-DD'))
+          })
         }
-      });
-      return Array.from(allDates);
+      })
+      return Array.from(allDates)
     }
 
-    if (!selectedCaregiver?.availability) return [];
+    if (!selectedCaregiver?.availability) return []
 
     return selectedCaregiver.availability.map((avail) =>
-      dayjs(avail.date).format("YYYY-MM-DD")
-    );
-  };
+      dayjs(avail.date).format('YYYY-MM-DD')
+    )
+  }
 
   const shouldDisableDate = (date: Dayjs) => {
-    const dateStr = date.format("YYYY-MM-DD");
-    const availableDates = getDatesWithAvailability();
-    return !availableDates.includes(dateStr);
-  };
+    const dateStr = date.format('YYYY-MM-DD')
+    const availableDates = getDatesWithAvailability()
+    return !availableDates.includes(dateStr)
+  }
 
   const handleBookAppointment = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (client === null) {
-      setMessage("Client information is missing.");
-      return;
+      setMessage('Client information is missing.')
+      return
     }
     if (!selectedAvailability) {
-      setMessage("Please select a time slot");
-      return;
+      setMessage('Please select a time slot')
+      return
     }
     if (selectedAvailability.availabilityId === undefined) {
-      setMessage("Selected availability is invalid.");
-      return;
+      setMessage('Selected availability is invalid.')
+      return
     }
     try {
-      setSubmitting(true);
-      setMessage("");
+      setSubmitting(true)
+      setMessage('')
 
       const appointmentData = {
         availabilityId: selectedAvailability.availabilityId,
         clientId: client.userId,
         task: appointmentTask,
-      };
+      }
 
-      await createAppointment(appointmentData);
-      setMessage("Appointment booked successfully!");
-      fetchAppointments();
-      setSelectedDate(null);
-      setSelectedAvailability(null);
-      setAppointmentTask("");
-      setSubmitting(false);
+      await createAppointment(appointmentData)
+      setMessage('Appointment booked successfully!')
+      fetchAppointments()
+      setSelectedDate(null)
+      setSelectedAvailability(null)
+      setAppointmentTask('')
+      setSubmitting(false)
     } catch (error) {
-      console.error("Error creating appointment:", error);
-      setMessage("Failed to book appointment. Please try again.");
-      setSubmitting(false);
+      console.error('Error creating appointment:', error)
+      setMessage('Failed to book appointment. Please try again.')
+      setSubmitting(false)
     }
-  };
+  }
 
   const formatTimeSlot = (availability: Availability) => {
-    return `${availability.startTime} - ${availability.endTime}`;
-  };
+    return `${availability.startTime} - ${availability.endTime}`
+  }
 
   const handleTaskChange = (event: SelectChangeEvent) => {
-    setAppointmentTask(event.target.value);
-  };
+    setAppointmentTask(event.target.value)
+  }
 
   return (
     <ProtectedRoute allowedRoles={[UserRole.Client]}>
@@ -267,10 +267,10 @@ export default function ClientPage() {
           {loading ? (
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "60vh",
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '60vh',
               }}
             >
               <CircularProgress />
@@ -284,22 +284,22 @@ export default function ClientPage() {
                     <h2>Book New Appointment</h2>
                     <Box
                       sx={{
-                        display: "flex",
-                        flexDirection: "column",
+                        display: 'flex',
+                        flexDirection: 'column',
                         gap: 3,
                       }}
                     >
                       {/* Step 1: Select Caregiver */}
-                      <Card sx={{ width: "100%", marginTop: 2 }}>
+                      <Card sx={{ width: '100%', marginTop: 2 }}>
                         <div className={styles.caregiverSelection}>
                           <div
                             className={`${styles.caregiverCard} ${
-                              selectedCaregiver === null ? styles.selected : ""
+                              selectedCaregiver === null ? styles.selected : ''
                             }`}
                             onClick={() => {
-                              setSelectedCaregiver(null);
-                              setSelectedDate(null);
-                              setSelectedAvailability(null);
+                              setSelectedCaregiver(null)
+                              setSelectedDate(null)
+                              setSelectedAvailability(null)
                             }}
                           >
                             <img
@@ -319,12 +319,12 @@ export default function ClientPage() {
                                   selectedCaregiver?.caregiverId ===
                                   caregiver.caregiverId
                                     ? styles.selected
-                                    : ""
+                                    : ''
                                 }`}
                                 onClick={() => {
-                                  setSelectedCaregiver(caregiver);
-                                  setSelectedDate(null);
-                                  setSelectedAvailability(null);
+                                  setSelectedCaregiver(caregiver)
+                                  setSelectedDate(null)
+                                  setSelectedAvailability(null)
                                 }}
                                 key={caregiver.userId}
                               >
@@ -332,7 +332,7 @@ export default function ClientPage() {
                                   className={styles.caregiverImage}
                                   src={
                                     caregiver.imageUrl ||
-                                    "/images/DefaultCaretaker.jpg"
+                                    '/images/DefaultCaretaker.jpg'
                                   }
                                   alt={caregiver.name}
                                 />
@@ -348,7 +348,7 @@ export default function ClientPage() {
                       </Card>
                       {/* Step 2: Select Date from Calendar */}
                       {(selectedCaregiver || selectedCaregiver === null) && (
-                        <Card sx={{ width: "100%" }}>
+                        <Card sx={{ width: '100%' }}>
                           <CardContent>
                             <h2>Step 2: Select a Date</h2>
                             <Typography
@@ -363,34 +363,34 @@ export default function ClientPage() {
                               <DateCalendar
                                 value={selectedDate}
                                 onChange={(newValue) => {
-                                  setSelectedDate(newValue);
-                                  setSelectedAvailability(null);
+                                  setSelectedDate(newValue)
+                                  setSelectedAvailability(null)
                                 }}
                                 shouldDisableDate={shouldDisableDate}
                                 sx={{
-                                  width: "500px",
-                                  height: "auto",
-                                  margin: "0 auto",
-                                  maxHeight: "none",
-                                  "& .MuiPickersSlideTransition-root": {
-                                    height: "330px",
+                                  width: '500px',
+                                  height: 'auto',
+                                  margin: '0 auto',
+                                  maxHeight: 'none',
+                                  '& .MuiPickersSlideTransition-root': {
+                                    height: '330px',
                                   },
-                                  "& .MuiPickersDay-root": {
-                                    fontSize: "1.2rem",
-                                    width: "48px",
-                                    height: "48px",
-                                    "&.Mui-disabled": {
-                                      color: "#666",
+                                  '& .MuiPickersDay-root': {
+                                    fontSize: '1.2rem',
+                                    width: '48px',
+                                    height: '48px',
+                                    '&.Mui-disabled': {
+                                      color: '#666',
                                     },
                                   },
-                                  "& .MuiDayCalendar-header": {
-                                    "& .MuiTypography-root": {
-                                      fontSize: "1.1rem",
-                                      width: "48px",
+                                  '& .MuiDayCalendar-header': {
+                                    '& .MuiTypography-root': {
+                                      fontSize: '1.1rem',
+                                      width: '48px',
                                     },
                                   },
-                                  "& .MuiPickersCalendarHeader-label": {
-                                    fontSize: "1.3rem",
+                                  '& .MuiPickersCalendarHeader-label': {
+                                    fontSize: '1.3rem',
                                   },
                                 }}
                               />
@@ -403,7 +403,7 @@ export default function ClientPage() {
                   <div className={styles.createAppointmentSectionRight}>
                     <h2>Select a Time Slot</h2>
                     {/* Step 3: Select Time Slot */}
-                    <Card sx={{ width: "100%", marginTop: 2 }}>
+                    <Card sx={{ width: '100%', marginTop: 2 }}>
                       <CardContent>
                         <Typography
                           variant="body2"
@@ -412,11 +412,11 @@ export default function ClientPage() {
                         >
                           {selectedDate
                             ? `Available times for ${selectedDate.format(
-                                "MMMM D, YYYY"
-                              )}` + `${selectedDate.format("MMMM D, YYYY")}`
-                            : "Please select a date to see available time slots."}
+                                'MMMM D, YYYY'
+                              )}` + `${selectedDate.format('MMMM D, YYYY')}`
+                            : 'Please select a date to see available time slots.'}
                         </Typography>
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                           {availabilitiesForDate &&
                             availabilitiesForDate.length > 0 &&
                             availabilitiesForDate.map((availability) => (
@@ -429,19 +429,19 @@ export default function ClientPage() {
                                 color={
                                   selectedAvailability?.availabilityId ===
                                   availability.availabilityId
-                                    ? "primary"
-                                    : "default"
+                                    ? 'primary'
+                                    : 'default'
                                 }
                                 sx={{
-                                  fontSize: "1rem",
-                                  padding: "20px 10px",
-                                  cursor: "pointer",
-                                  "&:hover": {
+                                  fontSize: '1rem',
+                                  padding: '20px 10px',
+                                  cursor: 'pointer',
+                                  '&:hover': {
                                     backgroundColor:
                                       selectedAvailability?.availabilityId ===
                                       availability.availabilityId
                                         ? undefined
-                                        : "#333",
+                                        : '#333',
                                   },
                                 }}
                               />
@@ -451,7 +451,7 @@ export default function ClientPage() {
                     </Card>
 
                     {/* Step 4: Appointment Details */}
-                    <Card sx={{ width: "100%", marginTop: 2 }}>
+                    <Card sx={{ width: '100%', marginTop: 2 }}>
                       <CardContent>
                         <Typography variant="h5" gutterBottom>
                           Step 4: Appointment Details
@@ -459,8 +459,8 @@ export default function ClientPage() {
 
                         <Box
                           sx={{
-                            display: "flex",
-                            flexDirection: "column",
+                            display: 'flex',
+                            flexDirection: 'column',
                             gap: 3,
                             mt: 2,
                           }}
@@ -468,9 +468,9 @@ export default function ClientPage() {
                           <Box
                             sx={{
                               padding: 2,
-                              border: "1px solid #333",
+                              border: '1px solid #333',
                               borderRadius: 1,
-                              backgroundColor: "#2a2a2a",
+                              backgroundColor: '#2a2a2a',
                             }}
                           >
                             <Typography
@@ -481,18 +481,18 @@ export default function ClientPage() {
                               Selected Appointment
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Caregiver:{" "}
+                              Caregiver:{' '}
                               {selectedCaregiver?.name ||
-                                "Any Available Caregiver"}
+                                'Any Available Caregiver'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Date:{" "}
-                              {selectedDate?.format("dddd, MMMM D, YYYY") ||
-                                "N/A"}
+                              Date:{' '}
+                              {selectedDate?.format('dddd, MMMM D, YYYY') ||
+                                'N/A'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Time: {selectedAvailability?.startTime || "N/A"} -{" "}
-                              {selectedAvailability?.endTime || "N/A"}
+                              Time: {selectedAvailability?.startTime || 'N/A'} -{' '}
+                              {selectedAvailability?.endTime || 'N/A'}
                             </Typography>
                           </Box>
                           <FormControl fullWidth>
@@ -553,7 +553,7 @@ export default function ClientPage() {
                             </Select>
                           </FormControl>
                           <Divider />
-                          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                             <Button
                               type="button"
                               variant="contained"
@@ -565,16 +565,16 @@ export default function ClientPage() {
                               }
                               fullWidth
                             >
-                              {submitting ? "Booking..." : "Book Appointment"}
+                              {submitting ? 'Booking...' : 'Book Appointment'}
                             </Button>
                           </Box>
 
                           {message && (
                             <Alert
                               severity={
-                                message.includes("success")
-                                  ? "success"
-                                  : "error"
+                                message.includes('success')
+                                  ? 'success'
+                                  : 'error'
                               }
                             >
                               {message}
@@ -587,19 +587,21 @@ export default function ClientPage() {
                 </div>
                 <div className={styles.appointmentSection}>
                   <h2>Your Appointments</h2>
-                  {appointments.length === 0 ? (
-                    <p>No appointments scheduled.</p>
-                  ) : (
-                    appointments.map((appointment) => (
-                      <CollapseCard
-                        key={appointment.appointment.appointmentId}
-                        appointment={appointment.appointment}
-                        pendingRequest={appointment.pendingRequest}
-                        isPending={appointment.isPending}
-                        onUpdate={() => fetchAppointments()}
-                      />
-                    ))
-                  )}
+                  <div className={styles.appointmentList}>
+                    {appointments.length === 0 ? (
+                      <p>No appointments scheduled.</p>
+                    ) : (
+                      appointments.map((appointment) => (
+                        <CollapseCard
+                          key={appointment.appointment.appointmentId}
+                          appointment={appointment.appointment}
+                          pendingRequest={appointment.pendingRequest}
+                          isPending={appointment.isPending}
+                          onUpdate={() => fetchAppointments()}
+                        />
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -607,5 +609,5 @@ export default function ClientPage() {
         </div>
       </ThemeProvider>
     </ProtectedRoute>
-  );
+  )
 }

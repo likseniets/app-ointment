@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 import {
   Appointment,
   AppointmentTask,
   Availability,
   PendingRequest,
-} from "../../interfaces/interfaces";
-import styles from "./styles.module.css";
+} from '../../interfaces/interfaces'
+import styles from './styles.module.css'
 import {
   Card,
   CardContent,
@@ -18,8 +18,8 @@ import {
   MenuItem,
   Divider,
   Button,
-} from "@mui/material";
-import dayjs from "dayjs";
+} from '@mui/material'
+import dayjs from 'dayjs'
 import {
   approveChangeRequest,
   createPendingRequest,
@@ -27,13 +27,13 @@ import {
   rejectChangeRequest,
   cancelChangeRequest,
   deleteAppointment,
-} from "@/api/api";
+} from '@/api/api'
 
 interface CollapseCardProps {
-  appointment: Appointment;
-  pendingRequest?: PendingRequest;
-  isPending?: PendingRequest;
-  onUpdate: () => void;
+  appointment: Appointment
+  pendingRequest?: PendingRequest
+  isPending?: PendingRequest
+  onUpdate: () => void
 }
 
 export default function CollapseCard({
@@ -42,56 +42,56 @@ export default function CollapseCard({
   isPending,
   onUpdate,
 }: CollapseCardProps) {
-  const [expanded, setExpanded] = useState(false);
-  const [task, setTask] = useState<string>("");
-  const [time, setTime] = useState<string>("");
-  const [availabilities, setAvailabilities] = useState<Availability[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false)
+  const [task, setTask] = useState<string>('')
+  const [time, setTime] = useState<string>('')
+  const [availabilities, setAvailabilities] = useState<Availability[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (expanded) {
-      getAvailabilities();
+      getAvailabilities()
     }
-  }, [expanded]);
+  }, [expanded])
 
   const handleTaskChange = (event: SelectChangeEvent) => {
-    setTask(event.target.value);
-  };
+    setTask(event.target.value)
+  }
 
   const handleTimeChange = (event: SelectChangeEvent) => {
-    setTime(event.target.value);
-  };
+    setTime(event.target.value)
+  }
 
   const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
+    setExpanded(!expanded)
+  }
 
   const getAvailabilities = async () => {
     const response = await getAvailabilityByCaregiver(
       appointment.caregiver.userId
-    );
-    setAvailabilities(response);
-  };
+    )
+    setAvailabilities(response)
+  }
 
   const approveRequest = async (requestId: number) => {
-    await approveChangeRequest(requestId);
-    onUpdate();
-  };
+    await approveChangeRequest(requestId)
+    onUpdate()
+  }
 
   const rejectRequest = async (requestId: number) => {
-    await rejectChangeRequest(requestId);
-    onUpdate();
-  };
+    await rejectChangeRequest(requestId)
+    onUpdate()
+  }
 
   const cancelRequest = async (requestId: number) => {
-    await cancelChangeRequest(requestId);
-    onUpdate();
-  };
+    await cancelChangeRequest(requestId)
+    onUpdate()
+  }
 
   const deleteAppointmentHandler = async (appointmentId: number) => {
-    await deleteAppointment(appointmentId);
-    onUpdate();
-  };
+    await deleteAppointment(appointmentId)
+    onUpdate()
+  }
 
   const SubmitChange = async () => {
     try {
@@ -99,29 +99,29 @@ export default function CollapseCard({
         appointmentId: appointment.appointmentId,
         newAvailabilityId: time,
         newTask: task,
-      });
-      onUpdate();
+      })
+      onUpdate()
     } catch (error) {
-      console.error("Error submitting change request:", error);
+      console.error('Error submitting change request:', error)
       setError(
         error instanceof Error
           ? error.message
-          : "Failed to submit change request. Please try again."
-      );
+          : 'Failed to submit change request. Please try again.'
+      )
     }
-  };
+  }
 
   return (
     <Card
       key={appointment.appointmentId}
-      sx={{ marginTop: 2, marginBottom: 2 }}
+      sx={{ marginBottom: 2, overflow: 'visible' }}
     >
       <CardContent>
         <div className={styles.appointmentCardContainer}>
           <div>
             <Typography variant="h6">{appointment.task}</Typography>
             <Typography variant="body2" color="text.secondary">
-              {dayjs(appointment.date).format("MMMM D, YYYY h:mm A")}
+              {dayjs(appointment.date).format('MMMM D, YYYY h:mm A')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Caregiver: {appointment.caregiver.name}
@@ -140,10 +140,10 @@ export default function CollapseCard({
             )}
             <Button variant="outlined" size="small" onClick={handleExpandClick}>
               {expanded
-                ? "Cancel"
+                ? 'Cancel'
                 : pendingRequest
-                ? "View Requested Change"
-                : "Request Change"}
+                ? 'View Requested Change'
+                : 'Request Change'}
             </Button>
           </div>
         </div>
@@ -162,9 +162,9 @@ export default function CollapseCard({
               )}
               {pendingRequest.newDateTime && (
                 <Typography>
-                  <strong>New Date/Time:</strong>{" "}
+                  <strong>New Date/Time:</strong>{' '}
                   {dayjs(pendingRequest.newDateTime).format(
-                    "MMMM D, YYYY h:mm A"
+                    'MMMM D, YYYY h:mm A'
                   )}
                 </Typography>
               )}
@@ -189,8 +189,8 @@ export default function CollapseCard({
               )}
               {isPending.newDateTime && (
                 <Typography>
-                  <strong>New Date/Time:</strong>{" "}
-                  {dayjs(isPending.newDateTime).format("MMMM D, YYYY h:mm A")}
+                  <strong>New Date/Time:</strong>{' '}
+                  {dayjs(isPending.newDateTime).format('MMMM D, YYYY h:mm A')}
                 </Typography>
               )}
               <Divider sx={{ marginY: 2 }} />
@@ -271,7 +271,7 @@ export default function CollapseCard({
                         key={availability.availabilityId}
                         value={availability.availabilityId}
                       >
-                        {dayjs(availability.date).format("MMMM D, YYYY")} at{" "}
+                        {dayjs(availability.date).format('MMMM D, YYYY')} at{' '}
                         {availability.startTime} - {availability.endTime}
                       </MenuItem>
                     ))}
@@ -291,12 +291,12 @@ export default function CollapseCard({
             variant="contained"
             color="error"
             onClick={() => deleteAppointmentHandler(appointment.appointmentId)}
-            sx={{ float: "right" }}
+            sx={{ float: 'right' }}
           >
             Delete Appointment
           </Button>
         </CardContent>
       </Collapse>
     </Card>
-  );
+  )
 }

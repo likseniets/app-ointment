@@ -1,9 +1,10 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { User } from "@/interfaces/interfaces";
-import GlobalStyle from "../globalStyle.module.css";
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { User, UserRole } from '@/interfaces/interfaces'
+import GlobalStyle from '../globalStyle.module.css'
+import styles from './styles.module.css'
 import {
   Button,
   Card,
@@ -14,62 +15,64 @@ import {
   TextField,
   CircularProgress,
   Alert,
-} from "@mui/material";
-import { ProtectedRoute } from "@/components/index";
-import { updatePassword, updateUser } from "@/api/api";
+  Divider,
+} from '@mui/material'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { ProfileCard, ProtectedRoute } from '@/components/index'
+import { updatePassword, updateUser } from '@/api/api'
 
 const darkTheme = createTheme({
   palette: {
-    mode: "dark",
+    mode: 'dark',
     primary: {
-      main: "#1976d2",
+      main: '#1976d2',
     },
     background: {
-      default: "#000000",
-      paper: "#1a1a1a",
+      default: '#000000',
+      paper: '#1a1a1a',
     },
   },
-});
+})
 
 export default function EditProfilePage() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
-  const [passwordMessage, setPasswordMessage] = useState("");
+  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false)
+  const [message, setMessage] = useState('')
+  const [passwordMessage, setPasswordMessage] = useState('')
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = localStorage.getItem('user')
     if (userStr) {
-      const userData = JSON.parse(userStr);
-      setUser(userData);
-      setName(userData.name || "");
-      setEmail(userData.email || "");
-      setPhone(userData.phone || "");
-      setAddress(userData.adress || "");
-      setImageUrl(userData.imageUrl || "");
+      const userData = JSON.parse(userStr)
+      setUser(userData)
+      setName(userData.name || '')
+      setEmail(userData.email || '')
+      setPhone(userData.phone || '')
+      setAddress(userData.adress || '')
+      setImageUrl(userData.imageUrl || '')
     }
-    setLoading(false);
-  }, []);
+    setLoading(false)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setMessage("");
+    e.preventDefault()
+    setSubmitting(true)
+    setMessage('')
 
     try {
       if (!user?.userId) {
-        throw new Error("User ID not found");
+        throw new Error('User ID not found')
       }
 
       const updatedUser: User = await updateUser(user.userId, {
@@ -78,74 +81,74 @@ export default function EditProfilePage() {
         phone,
         adress: address,
         imageUrl,
-      });
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      })
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      setUser(updatedUser)
 
-      setMessage("Profile updated successfully!");
+      setMessage('Profile updated successfully!')
 
       // Redirect back after 2 seconds
       setTimeout(() => {
         if (user?.role === 1) {
-          router.push("/caregiver");
+          router.push('/caregiver')
         } else {
-          router.push("/client");
+          router.push('/client')
         }
-      }, 2000);
+      }, 2000)
     } catch (error) {
-      console.error("Error updating profile:", error);
-      setMessage("Failed to update profile. Please try again.");
+      console.error('Error updating profile:', error)
+      setMessage('Failed to update profile. Please try again.')
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   const handleCancel = () => {
     if (user?.role === 1) {
-      router.push("/caregiver");
+      router.push('/caregiver')
     } else {
-      router.push("/client");
+      router.push('/client')
     }
-  };
+  }
 
   const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordSubmitting(true);
-    setPasswordMessage("");
+    e.preventDefault()
+    setPasswordSubmitting(true)
+    setPasswordMessage('')
 
     // Validate passwords match
     if (newPassword !== confirmPassword) {
-      setPasswordMessage("New passwords do not match!");
-      setPasswordSubmitting(false);
-      return;
+      setPasswordMessage('New passwords do not match!')
+      setPasswordSubmitting(false)
+      return
     }
 
     // Validate password length
     if (newPassword.length < 6) {
-      setPasswordMessage("Password must be at least 6 characters long!");
-      setPasswordSubmitting(false);
-      return;
+      setPasswordMessage('Password must be at least 6 characters long!')
+      setPasswordSubmitting(false)
+      return
     }
 
     try {
       const response: { message: string } = await updatePassword({
         currentPassword,
         newPassword,
-      });
+      })
 
-      setPasswordMessage(response.message);
+      setPasswordMessage(response.message)
 
       // Clear password fields
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
     } catch (error) {
-      console.error("Error updating password:", error);
-      setPasswordMessage("Failed to update password. Please try again.");
+      console.error('Error updating password:', error)
+      setPasswordMessage('Failed to update password. Please try again.')
     } finally {
-      setPasswordSubmitting(false);
+      setPasswordSubmitting(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -153,17 +156,17 @@ export default function EditProfilePage() {
         <ThemeProvider theme={darkTheme}>
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100vh",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100vh',
             }}
           >
             <CircularProgress />
           </Box>
         </ThemeProvider>
       </ProtectedRoute>
-    );
+    )
   }
 
   return (
@@ -171,33 +174,40 @@ export default function EditProfilePage() {
       <ThemeProvider theme={darkTheme}>
         <div className={GlobalStyle.page}>
           <div className={GlobalStyle.pageContent}>
-            <Box
-              sx={{
-                maxWidth: "1400px",
-                margin: "0 auto",
-                padding: 2,
-              }}
-            >
-              <h1>Edit Profile</h1>
-
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 4,
-                }}
-              >
+            <div className={styles.pageContainer}>
+              <div className={styles.pageContainerLeft}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
+                >
+                  <Button
+                    variant="outlined"
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => {
+                      if (user?.role === UserRole.Admin) {
+                        router.push('/admin')
+                      } else if (user?.role === UserRole.Caregiver) {
+                        router.push('/caregiver')
+                      } else if (user?.role === UserRole.Client) {
+                        router.push('/client')
+                      }
+                    }}
+                  >
+                    Back
+                  </Button>
+                </Box>
+                <h2>Edit Profile</h2>
                 {/* Left Side - Update User Information */}
-                <Card>
+                <Card sx={{ marginTop: 2 }}>
                   <CardContent>
-                    <h2 style={{ marginTop: 0 }}>User Information</h2>
+                    <h2>User Information</h2>
                     <Box
                       component="form"
                       onSubmit={handleSubmit}
                       sx={{
-                        display: "flex",
-                        flexDirection: "column",
+                        display: 'flex',
+                        flexDirection: 'column',
                         gap: 3,
+                        marginTop: 2,
                       }}
                     >
                       <TextField
@@ -244,10 +254,10 @@ export default function EditProfilePage() {
                       {imageUrl && (
                         <Box
                           sx={{
-                            display: "flex",
-                            justifyContent: "center",
+                            display: 'flex',
+                            justifyContent: 'center',
                             padding: 2,
-                            backgroundColor: "#2a2a2a",
+                            backgroundColor: '#2a2a2a',
                             borderRadius: 1,
                           }}
                         >
@@ -256,15 +266,15 @@ export default function EditProfilePage() {
                             src={imageUrl}
                             alt="Profile preview"
                             style={{
-                              maxWidth: "200px",
-                              maxHeight: "200px",
-                              borderRadius: "8px",
+                              maxWidth: '200px',
+                              maxHeight: '200px',
+                              borderRadius: '8px',
                             }}
                           />
                         </Box>
                       )}
 
-                      <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                      <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                         <Button
                           type="button"
                           variant="outlined"
@@ -280,14 +290,14 @@ export default function EditProfilePage() {
                           disabled={submitting}
                           fullWidth
                         >
-                          {submitting ? "Saving..." : "Save Changes"}
+                          {submitting ? 'Saving...' : 'Save Changes'}
                         </Button>
                       </Box>
 
                       {message && (
                         <Alert
                           severity={
-                            message.includes("success") ? "success" : "error"
+                            message.includes('success') ? 'success' : 'error'
                           }
                         >
                           {message}
@@ -296,17 +306,19 @@ export default function EditProfilePage() {
                     </Box>
                   </CardContent>
                 </Card>
-
-                {/* Right Side - Change Password */}
-                <Card>
+              </div>
+              <div className={styles.pageContainerRight}>
+                {user && <ProfileCard {...user} />}
+                <Divider sx={{ my: 4 }} />
+                <h1>Change Password</h1>
+                <Card sx={{ marginTop: 2 }}>
                   <CardContent>
-                    <h2 style={{ marginTop: 0 }}>Change Password</h2>
                     <Box
                       component="form"
                       onSubmit={handlePasswordChange}
                       sx={{
-                        display: "flex",
-                        flexDirection: "column",
+                        display: 'flex',
+                        flexDirection: 'column',
                         gap: 3,
                       }}
                     >
@@ -345,15 +357,15 @@ export default function EditProfilePage() {
                         fullWidth
                         sx={{ mt: 2 }}
                       >
-                        {passwordSubmitting ? "Updating..." : "Update Password"}
+                        {passwordSubmitting ? 'Updating...' : 'Update Password'}
                       </Button>
 
                       {passwordMessage && (
                         <Alert
                           severity={
-                            passwordMessage.includes("success")
-                              ? "success"
-                              : "error"
+                            passwordMessage.includes('success')
+                              ? 'success'
+                              : 'error'
                           }
                         >
                           {passwordMessage}
@@ -362,11 +374,11 @@ export default function EditProfilePage() {
                     </Box>
                   </CardContent>
                 </Card>
-              </Box>
-            </Box>
+              </div>
+            </div>
           </div>
         </div>
       </ThemeProvider>
     </ProtectedRoute>
-  );
+  )
 }

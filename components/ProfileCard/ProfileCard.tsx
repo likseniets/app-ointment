@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
-import { User } from "@/interfaces/interfaces";
-import styles from "./styles.module.css";
-import { Button, Card, CardContent, Typography } from "@mui/material";
-import Link from "next/link";
+import { User } from '@/interfaces/interfaces'
+import styles from './styles.module.css'
+import { Button, Card, CardContent, Typography } from '@mui/material'
+import Link from 'next/link'
 
 export default function ProfileCard(user: User) {
   return (
@@ -13,7 +13,7 @@ export default function ProfileCard(user: User) {
           <CardContent>
             <div className={styles.profileContainer}>
               <img
-                src={user.imageUrl || "/images/DefaultUser.jpg"}
+                src={user.imageUrl || '/images/DefaultUser.jpg'}
                 alt={`${user.name}'s profile`}
                 className={styles.profileImage}
               />
@@ -28,14 +28,6 @@ export default function ProfileCard(user: User) {
                 <Typography variant="body2" color="text.secondary">
                   Phone: {user.phone}
                 </Typography>
-                <Button
-                  variant="contained"
-                  sx={{ marginTop: 2 }}
-                  component={Link}
-                  href="/edit-profile"
-                >
-                  Edit Profile
-                </Button>
               </div>
             </div>
           </CardContent>
@@ -44,5 +36,5 @@ export default function ProfileCard(user: User) {
         <p>Loading profile...</p>
       )}
     </div>
-  );
+  )
 }
