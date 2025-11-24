@@ -9,22 +9,22 @@ A comprehensive appointment booking and management system built with Next.js, de
 - Browse available caregivers and their availability
 - Book appointments with specific caregivers or choose "Any Caregiver"
 - View and manage booked appointments
-- Request changes to existing appointments
+- Request and approve changes to existing appointments
 - Profile management
 
 ### Caregiver Portal
 
 - Set and manage availability schedules (date and hourly time slots)
 - View and manage appointments
-- Handle appointment change requests
+- Request and approve changes to existing appointments
 - Edit and delete availability slots
 - Profile management
 
 ### Admin Portal
 
 - **User Management**: Create, read, update, and delete users (Clients, Caregivers, Admins)
-- **Appointment Management**: View, create, edit, and delete appointments with filtering by caregiver/client
-- **Availability Management**: Manage all caregiver availability slots with caregiver filtering
+- **Appointment Management**: View, create, update, and delete appointments with filtering by caregiver/client
+- **Availability Management**: View, create, update, and delete availability slots with caregiver filtering
 - Comprehensive dashboard with quick access to all management features
 
 ## 📁 Project Structure
@@ -72,26 +72,19 @@ app-ointment/
 
 ## 📋 Prerequisites
 
-- Node.js (v20 or higher)
+- Node.js version v22.14.0 has been used under development
 - npm or yarn
 - Backend API server running on `http://localhost:5282`
 
 ## 🔧 Installation
 
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd app-ointment
-   ```
-
-2. **Install dependencies**
+1. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-3. **Configure API endpoint** (if needed)
+2. **Configure API endpoint** (if needed)
 
    Edit `api/api.tsx` and update the `BaseUrl` constant:
 
@@ -99,13 +92,13 @@ app-ointment/
    const BaseUrl = 'http://localhost:5282' // Change to your API URL
    ```
 
-4. **Run the development server**
+3. **Run the development server**
 
    ```bash
    npm run dev
    ```
 
-5. **Open the application**
+4. **Open the application**
 
    Navigate to [http://localhost:3000](http://localhost:3000) in your browser
 
@@ -115,6 +108,12 @@ app-ointment/
 
 1. **Access the login page** - The app automatically redirects to `/login`
 2. **Login with credentials** - Use your email and password
+   **_Premade users:_**
+   - **Admin**: admin@example.com / password123
+   - **Caregiver 1**: caregiver1@example.com / password123
+   - **Caregiver 2**: caregiver2@example.com / password123
+   - **Client 1**: client1@example.com / password123
+   - **Client 2**: client2@example.com / password123
 3. **Role-based redirect** - You'll be redirected to your dashboard based on your role:
    - Admins → `/admin`
    - Caregivers → `/caregiver`
@@ -124,11 +123,10 @@ app-ointment/
 
 1. **View appointments** - See all your booked appointments on the dashboard
 2. **Book new appointment**:
-   - Click "Book New Appointment"
    - Select a caregiver (or choose "Any Caregiver")
    - Pick an available date from the calendar
    - Choose a time slot
-   - Enter location and description
+   - Choose a task
    - Submit the booking
 3. **Manage appointments** - View appointment details, request changes, or cancel
 
@@ -226,11 +224,3 @@ All authenticated requests include JWT tokens in headers.
    - User management
    - Appointment oversight
    - Availability management
-
-## 📄 License
-
-This project is private and proprietary.
-
-## 👥 Support
-
-For support or questions, contact the development team.

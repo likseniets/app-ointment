@@ -3,11 +3,9 @@
 
 import { useEffect, useState } from 'react'
 import {
-  approveChangeRequest,
   getAppointments,
   getPendingRequests,
   getRequestedRequests,
-  rejectChangeRequest,
   getCaregivers,
   createAppointment,
 } from '@/api/api'
@@ -17,7 +15,6 @@ import {
   PendingRequest,
   User,
   Availability,
-  Client,
   Caregiver,
   AppointmentTask,
 } from '../../interfaces/interfaces'

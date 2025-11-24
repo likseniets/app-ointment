@@ -46,7 +46,6 @@ export default function CollapseCard({
   const [task, setTask] = useState<string>('')
   const [time, setTime] = useState<string>('')
   const [availabilities, setAvailabilities] = useState<Availability[]>([])
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (expanded) {
@@ -103,11 +102,6 @@ export default function CollapseCard({
       onUpdate()
     } catch (error) {
       console.error('Error submitting change request:', error)
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Failed to submit change request. Please try again.'
-      )
     }
   }
 

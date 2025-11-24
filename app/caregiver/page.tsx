@@ -93,7 +93,6 @@ export default function CaregiverPage() {
   useEffect(() => {
     fetchAppointments()
     fetchAvailabilities()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caregiver])
 
   const fetchAvailabilities = async () => {

@@ -1,8 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { User } from '@/interfaces/interfaces'
 import styles from './styles.module.css'
-import { Button, Card, CardContent, Typography } from '@mui/material'
-import Link from 'next/link'
+import { Card, CardContent, Typography } from '@mui/material'
 
 export default function ProfileCard(user: User) {
   return (

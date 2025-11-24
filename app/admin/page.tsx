@@ -9,9 +9,7 @@ import {
   Typography,
   Card,
   CardContent,
-  Button,
 } from '@mui/material'
-import { Grid } from '@mui/material'
 import PeopleIcon from '@mui/icons-material/People'
 import EventIcon from '@mui/icons-material/Event'
 import ScheduleIcon from '@mui/icons-material/Schedule'

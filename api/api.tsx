@@ -1,19 +1,32 @@
 import {
-  AppointmentTask,
   Availability,
   CreateAvailabilityDTO,
   UpdateAvailabilityResponse,
   UpdateUserDTO,
 } from '@/interfaces/interfaces'
-import { getAuthHeaders } from '@/utils/auth'
+import { getAuthHeaders, removeToken } from '@/utils/auth'
 
 const BaseUrl = 'http://localhost:5282'
+
+// Helper function to handle API responses and check for 401 errors
+const handleResponse = async (response: Response) => {
+  if (response.status === 401) {
+    // Unauthorized - clear token and redirect to login
+    removeToken()
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
+    }
+    throw new Error('Unauthorized')
+  }
+  return response
+}
 
 export const getUser = async () => {
   const response = await fetch(`${BaseUrl}/api/User/`, {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -23,6 +36,7 @@ export const updateUser = async (userId: number, userData: UpdateUserDTO) => {
     body: JSON.stringify(userData),
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -38,6 +52,7 @@ export const updatePassword = async (data: {
     }),
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -46,6 +61,7 @@ export const getCaregivers = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -65,6 +81,7 @@ export const getAppointments = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -73,6 +90,7 @@ export const getPendingRequests = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -81,6 +99,7 @@ export const getRequestedRequests = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -94,6 +113,7 @@ export const createPendingRequest = async (data: {
     body: JSON.stringify(data),
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response
 }
 
@@ -105,6 +125,7 @@ export const approveChangeRequest = async (changeRequestId: number) => {
       headers: getAuthHeaders(),
     }
   )
+  await handleResponse(response)
   return response.json()
 }
 
@@ -116,6 +137,7 @@ export const rejectChangeRequest = async (changeRequestId: number) => {
       headers: getAuthHeaders(),
     }
   )
+  await handleResponse(response)
   return response.json()
 }
 
@@ -127,6 +149,7 @@ export const cancelChangeRequest = async (changeRequestId: number) => {
       headers: getAuthHeaders(),
     }
   )
+  await handleResponse(response)
   return response.json()
 }
 
@@ -135,6 +158,7 @@ export const getAvailabilities = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -145,6 +169,7 @@ export const getAvailabilityByCaregiver = async (
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -156,6 +181,7 @@ export const createAvailability = async (
     body: JSON.stringify(availability),
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -167,6 +193,7 @@ export const deleteAvailability = async (availabilityId: number) => {
       headers: getAuthHeaders(),
     }
   )
+  await handleResponse(response)
   return response.json()
 }
 
@@ -175,6 +202,7 @@ export const getAllAvailabilities = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -188,6 +216,7 @@ export const createAppointment = async (appointmentData: {
     body: JSON.stringify(appointmentData),
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -199,6 +228,7 @@ export const deleteAppointment = async (appointmentId: number) => {
       headers: getAuthHeaders(),
     }
   )
+  await handleResponse(response)
   return response.json()
 }
 
@@ -208,6 +238,7 @@ export const getAllUsers = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -216,6 +247,7 @@ export const getAllAppointments = async () => {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -225,6 +257,7 @@ export const createUser = async (userData: any) => {
     body: JSON.stringify(userData),
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -233,6 +266,7 @@ export const deleteUser = async (userId: number) => {
     method: 'DELETE',
     headers: getAuthHeaders(),
   })
+  await handleResponse(response)
   return response.json()
 }
 
@@ -248,6 +282,7 @@ export const updateAppointment = async (
       headers: getAuthHeaders(),
     }
   )
+  await handleResponse(response)
   return response.json()
 }
 
@@ -263,5 +298,6 @@ export const updateAvailability = async (
       headers: getAuthHeaders(),
     }
   )
+  await handleResponse(response)
   return response.json()
 }
