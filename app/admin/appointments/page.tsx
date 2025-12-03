@@ -82,6 +82,7 @@ export default function AdminAppointmentsPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      // Fetch all required data in parallel for better performance
       const [appointmentsData, caregiversData, usersData] = await Promise.all([
         getAppointments(),
         getCaregivers(),
@@ -89,7 +90,7 @@ export default function AdminAppointmentsPage() {
       ])
       setAppointments(appointmentsData)
       setCaregivers(caregiversData)
-      setClients(usersData.filter((u: User) => u.role === 1)) // UserRole.Client = 1
+      setClients(usersData.filter((u: User) => u.role === 1)) // Filter for clients only (UserRole.Client = 1)
       console.log('Caregivers:', caregiversData)
       console.log('Appointments:', appointmentsData)
     } catch (error) {
@@ -135,8 +136,10 @@ export default function AdminAppointmentsPage() {
         await updateAppointment(editingAppointment.appointmentId, formData)
         setMessage('Appointment updated successfully')
       } else {
+        // Note: availabilityId set to 0 as placeholder - proper implementation
+        // would require availability selection UI
         await createAppointment({
-          availabilityId: 0, // This would need to be selected properly
+          availabilityId: 0,
           clientId: formData.clientId,
           task: formData.task,
         })
@@ -259,6 +262,7 @@ export default function AdminAppointmentsPage() {
             <TableBody>
               {appointments
                 .filter((appointment) => {
+                  // Apply both caregiver and client filters (0 means show all)
                   const matchesCaregiver =
                     filterCaregiverId === 0 ||
                     Number(appointment.caregiverId) ===

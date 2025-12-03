@@ -63,13 +63,13 @@ export default function AdminAvailabilitiesPage() {
   const [editingAvailability, setEditingAvailability] =
     useState<Availability | null>(null)
   const [message, setMessage] = useState('')
-  const [filterCaregiverId, setFilterCaregiverId] = useState<number>(0)
+  const [filterCaregiverId, setFilterCaregiverId] = useState<number>(0) // 0 means "All Caregivers"
   const [formData, setFormData] = useState({
     caregiverId: 0,
     date: '',
     startTime: '',
     endTime: '',
-    slotLengthMinutes: 60,
+    slotLengthMinutes: 60, // Default slot length for availability windows
   })
 
   useEffect(() => {
@@ -79,6 +79,7 @@ export default function AdminAvailabilitiesPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      // Fetch both availabilities and caregivers in parallel for better performance
       const [availabilitiesData, caregiversData] = await Promise.all([
         getAllAvailabilities(),
         getCaregivers(),
@@ -95,15 +96,17 @@ export default function AdminAvailabilitiesPage() {
 
   const handleOpenDialog = (availability?: Availability) => {
     if (availability) {
+      // Editing existing availability - populate form with existing data
       setEditingAvailability(availability)
       setFormData({
         caregiverId: availability.caregiverId,
-        date: dayjs(availability.date).format('YYYY-MM-DD'),
+        date: dayjs(availability.date).format('YYYY-MM-DD'), // Format date for HTML date input
         startTime: availability.startTime,
         endTime: availability.endTime,
         slotLengthMinutes: 60,
       })
     } else {
+      // Creating new availability - reset form
       setEditingAvailability(null)
       setFormData({
         caregiverId: 0,
@@ -125,18 +128,20 @@ export default function AdminAvailabilitiesPage() {
   const handleSubmit = async () => {
     try {
       if (editingAvailability && editingAvailability.availabilityId) {
+        // Update existing availability
         await updateAvailability(editingAvailability.availabilityId, {
           ...formData,
-          date: `${formData.date}T00:00:00`,
+          date: `${formData.date}T00:00:00`, // Convert to ISO 8601 format required by backend
         })
         setMessage('Availability updated successfully')
       } else {
+        // Create new availability - backend will split into individual time slots
         await createAvailability({
           caregiverId: formData.caregiverId,
-          date: `${formData.date}T00:00:00`,
+          date: `${formData.date}T00:00:00`, // Convert to ISO 8601 format
           startTime: formData.startTime,
           endTime: formData.endTime,
-          slotLengthMinutes: formData.slotLengthMinutes,
+          slotLengthMinutes: formData.slotLengthMinutes, // Backend uses this to create multiple slots
         })
         setMessage('Availability created successfully')
       }
@@ -241,6 +246,7 @@ export default function AdminAvailabilitiesPage() {
             <TableBody>
               {availabilities
                 .filter((availability) => {
+                  // Filter logic: show all if filterCaregiverId is 0, otherwise match caregiver
                   if (filterCaregiverId === 0) return true
                   return (
                     Number(availability.caregiverId) ===
@@ -334,7 +340,7 @@ export default function AdminAvailabilitiesPage() {
                 fullWidth
                 required
                 InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 900 }}
+                inputProps={{ step: 900 }} // 900 seconds = 15 minutes interval
               />
               <TextField
                 label="End Time"
@@ -346,7 +352,7 @@ export default function AdminAvailabilitiesPage() {
                 fullWidth
                 required
                 InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 900 }}
+                inputProps={{ step: 900 }} // 900 seconds = 15 minutes interval
               />
               <FormControl fullWidth>
                 <InputLabel>Time Slot Length</InputLabel>
@@ -360,7 +366,6 @@ export default function AdminAvailabilitiesPage() {
                   }
                   label="Time Slot Length"
                 >
-                  <MenuItem value={30}>30 minutes</MenuItem>
                   <MenuItem value={60}>60 minutes</MenuItem>
                   <MenuItem value={90}>90 minutes</MenuItem>
                   <MenuItem value={120}>120 minutes</MenuItem>

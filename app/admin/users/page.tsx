@@ -82,6 +82,7 @@ export default function AdminUsersPage() {
 
   const handleOpenDialog = (user?: User) => {
     if (user) {
+      // Editing existing user - populate form with current data
       setEditingUser(user)
       setFormData({
         name: user.name,
@@ -89,16 +90,17 @@ export default function AdminUsersPage() {
         phone: user.phone,
         adress: user.adress,
         role: user.role,
-        password: '',
+        password: '', // Password not pre-filled for security
       })
     } else {
+      // Creating new user - reset form with default values
       setEditingUser(null)
       setFormData({
         name: '',
         email: '',
         phone: '',
         adress: '',
-        role: UserRole.Client,
+        role: UserRole.Client, // Default role for new users
         password: '',
       })
     }
@@ -114,6 +116,7 @@ export default function AdminUsersPage() {
   const handleSubmit = async () => {
     try {
       if (editingUser) {
+        // Update existing user - only updates profile fields, not password or role
         await updateUser(editingUser.userId, {
           name: formData.name,
           email: formData.email,
@@ -122,6 +125,7 @@ export default function AdminUsersPage() {
         })
         setMessage('User updated successfully')
       } else {
+        // Create new user with all fields including password and role
         await createUser(formData)
         setMessage('User created successfully')
       }

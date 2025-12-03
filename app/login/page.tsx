@@ -8,6 +8,7 @@ import { TextField, Button } from '@mui/material'
 import { login } from '@/api/api'
 import { setToken } from '@/utils/auth'
 import { UserRole } from '@/interfaces/interfaces'
+import Link from 'next/link'
 
 const textFieldSx = {
   '& .MuiInput-underline:before': { borderBottomColor: '#1976d2' },
@@ -109,9 +110,20 @@ export default function Login() {
           variant="contained"
           disabled={loading}
           onClick={() => handleLogin(email, password)}
+          sx={{ marginTop: 2 }}
         >
           {loading ? 'Logging in...' : 'Login'}
         </Button>
+
+        <div style={{ marginTop: '1rem', color: '#1976d2' }}>
+          Don't have an account?{' '}
+          <Link
+            href="/register"
+            style={{ color: '#1976d2', textDecoration: 'underline' }}
+          >
+            Register here
+          </Link>
+        </div>
       </div>
     </div>
   )

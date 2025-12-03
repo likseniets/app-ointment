@@ -124,6 +124,9 @@ export default function CaregiverPage() {
       const requestedRequestsData = await getRequestedRequests()
       const pendingRequestsData = await getPendingRequests()
 
+      // Merge appointments with their associated change requests for display
+      // pendingRequest: change requests initiated by this caregiver
+      // isPending: change requests initiated by clients for this caregiver's appointments
       const mergedAppointments: MergedAppointment[] = appointmentsData.map(
         (appointment: Appointment) => {
           const matchingRequest = requestedRequestsData.find(
@@ -168,6 +171,7 @@ export default function CaregiverPage() {
       }
     } catch (error: any) {
       console.error('Error adding availability:', error)
+      // Display backend error messages (e.g., "No new slots created (may already exist)")
       if (error.message) {
         setErrorMessage(error.message)
       } else {
@@ -395,6 +399,7 @@ export default function CaregiverPage() {
                               }}
                               showDaysOutsideCurrentMonth
                               shouldDisableDate={(date) => {
+                                // Disable dates that don't have any availability slots
                                 const dateStr = date.format('YYYY-MM-DD')
                                 return !availabilities.some(
                                   (av) =>
@@ -427,6 +432,7 @@ export default function CaregiverPage() {
                                 maxHeight: 320,
                                 overflowY: 'auto',
                                 pr: 1,
+                                // Custom scrollbar styling for dark theme
                                 '&::-webkit-scrollbar': {
                                   width: '8px',
                                 },

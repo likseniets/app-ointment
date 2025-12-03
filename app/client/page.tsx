@@ -100,7 +100,8 @@ export default function ClientPage() {
     if (selectedDate && selectedCaregiver) {
       filterAvailabilitiesForDate(selectedDate)
     } else if (selectedDate && selectedCaregiver === null) {
-      // "Any Caregiver" selected - show all availabilities from all caregivers
+      // selectedCaregiver === null represents "Any Caregiver" option
+      // Show all availabilities from all caregivers for the selected date
       filterAllAvailabilitiesForDate(selectedDate)
     } else {
       setAvailabilitiesForDate([])
@@ -116,6 +117,9 @@ export default function ClientPage() {
       const requestedRequestsData = await getRequestedRequests()
       const pendingRequestsData = await getPendingRequests()
 
+      // Merge appointments with their associated change requests
+      // pendingRequest: change requests initiated by this client
+      // isPending: change requests initiated by caregivers for this client's appointments
       const mergedAppointments: MergedAppointment[] = appointmentsData.map(
         (appointment: Appointment) => {
           const matchingRequest = requestedRequestsData.find(
@@ -172,6 +176,7 @@ export default function ClientPage() {
     const dateStr = date.format('YYYY-MM-DD')
     const allAvailabilities: Availability[] = []
 
+    // Aggregate availabilities from all caregivers for the selected date
     caregivers.forEach((caregiver) => {
       if (caregiver.availability) {
         const filtered = caregiver.availability.filter((avail) =>
@@ -186,7 +191,7 @@ export default function ClientPage() {
 
   const getDatesWithAvailability = (): string[] => {
     if (selectedCaregiver === null) {
-      // "Any Caregiver" - get all dates from all caregivers
+      // "Any Caregiver" selected - aggregate all available dates from all caregivers
       const allDates = new Set<string>()
       caregivers.forEach((caregiver) => {
         if (caregiver.availability) {

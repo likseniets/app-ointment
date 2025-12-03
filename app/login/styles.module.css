@@ -1,12 +1,11 @@
 .inputContainer {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 40px;
-    width: 500px;
-    height: 400px;
-    margin: 10px 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    background-color: rgb(31, 29, 29);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 40px;
+  width: 500px;
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  background-color: rgb(31, 29, 29);
 }

@@ -8,7 +8,7 @@ import { getAuthHeaders, removeToken } from '@/utils/auth'
 
 const BaseUrl = 'http://localhost:5282'
 
-// Helper function to handle API responses and check for 401 errors
+// Global error handler for API responses - automatically redirects to login on 401 Unauthorized
 const handleResponse = async (response: Response) => {
   if (response.status === 401) {
     // Unauthorized - clear token and redirect to login
@@ -183,6 +183,7 @@ export const createAvailability = async (
   })
   await handleResponse(response)
 
+  // Backend returns error text instead of JSON for duplicate slots
   if (!response.ok) {
     const errorData = await response.json()
     throw new Error(errorData.message || 'Failed to create availability')
@@ -264,6 +265,43 @@ export const createUser = async (userData: any) => {
     headers: getAuthHeaders(),
   })
   await handleResponse(response)
+  return response.json()
+}
+
+export const registerClient = async (userData: {
+  name: string
+  role: number
+  adress: string
+  phone: string
+  email: string
+  password: string
+  imageUrl: string
+}) => {
+  const response = await fetch(`${BaseUrl}/api/User/create/client`, {
+    method: 'POST',
+    body: JSON.stringify(userData),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    const contentType = response.headers.get('content-type')
+    let errorMessage = 'Failed to register'
+
+    // Backend may return plain text or JSON depending on error type
+    if (contentType && contentType.includes('application/json')) {
+      const errorData = await response.json()
+      errorMessage = errorData.message || errorMessage
+    } else {
+      // Handle plain text responses (e.g., "Email already exists")
+      const errorText = await response.text()
+      errorMessage = errorText || errorMessage
+    }
+
+    throw new Error(errorMessage)
+  }
+
   return response.json()
 }
 

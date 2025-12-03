@@ -18,7 +18,9 @@ import {
   MenuItem,
   Divider,
   Button,
+  IconButton,
 } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 import dayjs from 'dayjs'
 import {
   approveChangeRequest,
@@ -49,6 +51,7 @@ export default function CollapseCard({
 
   useEffect(() => {
     if (expanded) {
+      // Load available time slots from the appointment's caregiver when card expands
       getAvailabilities()
     }
   }, [expanded])
@@ -94,6 +97,7 @@ export default function CollapseCard({
 
   const SubmitChange = async () => {
     try {
+      // Create a pending change request with new time slot and/or task
       await createPendingRequest({
         appointmentId: appointment.appointmentId,
         newAvailabilityId: time,
@@ -120,6 +124,9 @@ export default function CollapseCard({
             <Typography variant="body2" color="text.secondary">
               Caregiver: {appointment.caregiver.name}
             </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Client: {appointment.client.name}
+            </Typography>
           </div>
           <div className={styles.appointmentCardContainerRight}>
             {pendingRequest && (
@@ -144,6 +151,10 @@ export default function CollapseCard({
       </CardContent>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
+          {/* Three states: 
+              1. pendingRequest: User can view their own pending request and cancel it
+              2. isPending: User can approve/reject incoming change requests from others
+              3. Default: User can request changes to time/task */}
           {pendingRequest ? (
             <>
               <Typography variant="h6" gutterBottom>
@@ -281,14 +292,14 @@ export default function CollapseCard({
               </Button>
             </>
           )}
-          <Button
-            variant="contained"
-            color="error"
+          <IconButton
             onClick={() => deleteAppointmentHandler(appointment.appointmentId)}
-            sx={{ float: 'right' }}
+            color="error"
+            sx={{ float: 'right', display: 'flex', gap: 1 }}
           >
-            Delete Appointment
-          </Button>
+            <DeleteIcon />
+            <Typography variant="button">Delete</Typography>
+          </IconButton>
         </CardContent>
       </Collapse>
     </Card>

@@ -1,92 +1,94 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { isAuthenticated } from "@/utils/auth";
-import { CircularProgress, Box } from "@mui/material";
-import { UserRole } from "@/interfaces/interfaces";
+import { useEffect, useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { isAuthenticated } from '@/utils/auth'
+import { CircularProgress, Box } from '@mui/material'
+import { UserRole } from '@/interfaces/interfaces'
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
-  allowedRoles?: number[]; // Optional: restrict to specific user roles
+  children: React.ReactNode
+  allowedRoles?: number[] // Optional: restrict to specific user roles
 }
 
 export default function ProtectedRoute({
   children,
   allowedRoles,
 }: ProtectedRouteProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const router = useRouter()
+  const pathname = usePathname()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState(false)
 
   useEffect(() => {
-    // Small delay to ensure localStorage is ready
+    // Small delay to ensure localStorage is ready (client-side only)
     const checkAuth = () => {
-      // Check if user is authenticated
-      const authenticated = isAuthenticated();
+      // Check if user has valid JWT token
+      const authenticated = isAuthenticated()
 
       if (!authenticated) {
         // Only redirect if not already on login page
-        if (pathname !== "/login") {
-          router.push("/login");
+        if (pathname !== '/login') {
+          router.push('/login')
         }
-        setIsLoading(false);
-        return;
+        setIsLoading(false)
+        return
       }
 
-      // If allowedRoles is specified, check user role
+      // If allowedRoles is specified, enforce role-based access control
       if (allowedRoles && allowedRoles.length > 0) {
-        const userStr = localStorage.getItem("user");
+        const userStr = localStorage.getItem('user')
         if (userStr) {
-          const user = JSON.parse(userStr);
-          console.log("User role:", user.role);
+          const user = JSON.parse(userStr)
+          console.log('User role:', user.role)
           if (!allowedRoles.includes(user.role)) {
-            // User doesn't have the required role - redirect to their appropriate page
-            if (user.role === UserRole.Caregiver && pathname !== "/caregiver") {
-              router.push("/caregiver");
+            // User doesn't have required role - redirect to their appropriate dashboard
+            if (user.role === UserRole.Caregiver && pathname !== '/caregiver') {
+              router.push('/caregiver')
             } else if (
               user.role === UserRole.Client &&
-              pathname !== "/client"
+              pathname !== '/client'
             ) {
-              router.push("/client");
+              router.push('/client')
+            } else if (user.role === UserRole.Admin && pathname !== '/admin') {
+              router.push('/admin')
             } else {
-              router.push("/login");
+              router.push('/login')
             }
-            setIsLoading(false);
-            return;
+            setIsLoading(false)
+            return
           }
         } else {
-          router.push("/login");
-          setIsLoading(false);
-          return;
+          router.push('/login')
+          setIsLoading(false)
+          return
         }
       }
 
-      setIsAuthorized(true);
-      setIsLoading(false);
-    };
+      setIsAuthorized(true)
+      setIsLoading(false)
+    }
 
-    // Add a small timeout to prevent race conditions
-    const timeoutId = setTimeout(checkAuth, 100);
+    // Timeout prevents race conditions with localStorage initialization
+    const timeoutId = setTimeout(checkAuth, 100)
 
-    return () => clearTimeout(timeoutId);
-  }, [router, allowedRoles, pathname]);
+    return () => clearTimeout(timeoutId)
+  }, [router, allowedRoles, pathname])
 
   if (isLoading) {
     return (
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
         }}
       >
         <CircularProgress />
       </Box>
-    );
+    )
   }
 
-  return isAuthorized ? <>{children}</> : null;
+  return isAuthorized ? <>{children}</> : null
 }

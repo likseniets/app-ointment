@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { AppBar, Toolbar, Button, Box, Typography } from '@mui/material'
+import { Button, Box, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { UserRole } from '@/interfaces/interfaces'
 import { removeToken } from '@/utils/auth'
@@ -13,6 +13,7 @@ export default function Header() {
   const [userRole, setUserRole] = useState<UserRole | null>(null)
 
   useEffect(() => {
+    // Load user role from localStorage to determine which navigation items to show
     const user = localStorage.getItem('user')
     if (user) {
       const userData = JSON.parse(user)
@@ -27,6 +28,7 @@ export default function Header() {
   const isAdmin = userRole === UserRole.Admin
 
   const handleLogout = () => {
+    // Clear authentication token and user data, then redirect to login
     removeToken()
     setUserRole(null)
     router.push('/login')
@@ -66,6 +68,7 @@ export default function Header() {
           >
             Dashboard
           </Button>
+          {/* Admin-only navigation items for user, appointment, and availability management */}
           {isAdmin && (
             <>
               <Button
