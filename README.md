@@ -2,7 +2,7 @@
 
 A comprehensive appointment booking and management system built with Next.js, designed for caregivers and clients to schedule and manage appointments efficiently.
 
-## 🚀 Features
+## Features
 
 ### Client Portal
 
@@ -27,7 +27,7 @@ A comprehensive appointment booking and management system built with Next.js, de
 - **Availability Management**: View, create, update, and delete availability slots with caregiver filtering
 - Comprehensive dashboard with quick access to all management features
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 app-ointment/
@@ -61,7 +61,7 @@ app-ointment/
 └── package.json                 # Dependencies and scripts
 ```
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
@@ -70,13 +70,13 @@ app-ointment/
 - **Styling**: CSS Modules + Material-UI theming
 - **State Management**: React Hooks (useState, useEffect)
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Node.js version v22.14.0 has been used under development
 - npm or yarn
 - Backend API server running on `http://localhost:5282`
 
-## 🔧 Installation
+## Installation
 
 1. **Install dependencies**
 
@@ -102,7 +102,7 @@ app-ointment/
 
    Navigate to [http://localhost:3000](http://localhost:3000) in your browser
 
-## 🎯 Usage Guide
+## Usage Guide
 
 ### First Time Setup
 
@@ -171,7 +171,7 @@ All users can edit their profile:
 - Change password
 - Click "Back" to return to your dashboard
 
-## 🌐 API Endpoints
+## API Endpoints
 
 The application communicates with a backend API. Key endpoints include:
 
@@ -183,7 +183,7 @@ The application communicates with a backend API. Key endpoints include:
 
 All authenticated requests include JWT tokens in headers.
 
-## 🎨 Theme & Design
+## Theme & Design
 
 - **Dark Theme** throughout the application
 - **Primary Color**: Blue (#1976d2)
@@ -191,21 +191,21 @@ All authenticated requests include JWT tokens in headers.
 - **Responsive Layout** for various screen sizes
 - **Consistent Navigation** with role-based header menu
 
-## 🔐 Authentication
+## Authentication
 
 - JWT token-based authentication
 - Tokens stored in localStorage
 - Protected routes redirect to login if not authenticated
 - Role-based access control for different user types
 
-## 📝 Scripts
+## Scripts
 
 - `npm run dev` - Start development server (with Turbopack)
 - `npm run build` - Build production bundle
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
 
-## 🤝 User Roles
+## User Roles
 
 1. **Client (Role: 1)**
 
