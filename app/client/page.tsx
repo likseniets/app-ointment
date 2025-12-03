@@ -593,6 +593,10 @@ export default function ClientPage() {
                     {appointments.length === 0 ? (
                       <p>No appointments scheduled.</p>
                     ) : (
+                      // maps out appointment and passes to CollapseCard component
+                      // uses a set of merged appointments to include pending requests and isPending info
+                      // having callapse card in it's own component to reduce complexity of this page and
+                      // allows each card to manage its own states and functions, like the dropdown for change requests
                       appointments.map((appointment) => (
                         <CollapseCard
                           key={appointment.appointment.appointmentId}
